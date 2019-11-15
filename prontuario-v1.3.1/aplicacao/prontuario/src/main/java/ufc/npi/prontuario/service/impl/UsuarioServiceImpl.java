@@ -2,7 +2,7 @@ package ufc.npi.prontuario.service.impl;
 
 import static ufc.npi.prontuario.util.ExceptionSuccessConstants.ERRO_ALTERAR_SENHA;
 
-import java.util.UUID;
+import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -15,7 +15,6 @@ import ufc.npi.prontuario.exception.ProntuarioException;
 import ufc.npi.prontuario.model.Token;
 import ufc.npi.prontuario.model.Usuario;
 import ufc.npi.prontuario.repository.UsuarioRepository;
-import ufc.npi.prontuario.service.EmailService;
 import ufc.npi.prontuario.service.TokenService;
 import ufc.npi.prontuario.service.UsuarioService;
 
@@ -27,9 +26,6 @@ public class UsuarioServiceImpl implements UsuarioService {
 
 	@Autowired
 	private TokenService tokenService;
-
-	@Autowired
-	private EmailService emailService;
 
 	@Override
 	public void alterarSenha(Integer usuarioId, String senhaAtual, String novaSenha) throws ProntuarioException {
@@ -53,26 +49,11 @@ public class UsuarioServiceImpl implements UsuarioService {
 	@Override
 	public void recuperarSenha(String email) {
 		Usuario usuario = usuarioRepository.findByEmail(email);
-
-		if (usuario != null) {
-			Token token = null;
-			token = tokenService.buscarPorUsuario(usuario);
-
-			if (token == null) {
-				token = new Token();
-
-				token.setUsuario(usuario);
-
-				do {
-					token.setToken(UUID.randomUUID().toString());
-				} while (tokenService.existe(token.getToken()));
-
-				tokenService.salvar(token);
-			}
-
-			emailService.emailRecuperacaoSenha(token);
+		
+		if (Objects.nonNull(usuario)) {
+			tokenService.enviarTokenDeRecuperacao(usuario);
 		}
-
+		
 	}
 
 	@Override
