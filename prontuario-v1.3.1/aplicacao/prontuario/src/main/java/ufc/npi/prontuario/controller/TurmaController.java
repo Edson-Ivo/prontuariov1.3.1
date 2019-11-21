@@ -122,13 +122,18 @@ public class TurmaController {
 	@PostMapping("/{idTurma}/adicionar-professor")
 	public ModelAndView adicionarProfessor(@PathVariable("idTurma") Turma turma, 
 			@ModelAttribute("novosProfessores") Turma novosProfessores, RedirectAttributes attributes){
+		List<Servidor> professores = novosProfessores.getProfessores();
 		
-		if(novosProfessores.getProfessores() != null && !novosProfessores.getProfessores().isEmpty()){
-			turmaService.adicionarProfessorTurma(turma, novosProfessores.getProfessores());
+		if(listIsNotNullOrEmpty(professores)){
+			turmaService.adicionarProfessorTurma(turma, professores);
 			attributes.addFlashAttribute(SUCCESS, SUCCESS_VINCULAR_PROFESSOR);
 		}
 		
 		return new ModelAndView(REDIRECT_DETALHES_TURMA + turma.getId());
+	}
+	
+	private boolean listIsNotNullOrEmpty(List<?> list) {
+		return list != null && !(list.isEmpty());
 	}
 	
 	@PostAuthorize(PERMISSOES_ADMINISTRACAO_VERIFICACAO_PROFESSOR)
