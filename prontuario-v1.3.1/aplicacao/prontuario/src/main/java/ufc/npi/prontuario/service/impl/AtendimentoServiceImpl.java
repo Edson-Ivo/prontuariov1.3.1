@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -133,14 +134,11 @@ public class AtendimentoServiceImpl implements AtendimentoService {
 
 	@Override
 	public Atendimento adicionarAvaliacaoAtendimento(Atendimento atendimento) {
-		if (atendimento.getAvaliacao() == null) {
+		if (Objects.isNull(atendimento.getAvaliacao())) {
 			AvaliacaoAtendimento avaliacaoAtendimento = new AvaliacaoAtendimento();
 			Avaliacao avaliacao = avaliacaoRepository.findAvaliacaoAtiva();
 			for (ItemAvaliacao item : avaliacao.getItens()) {
-				ItemAvaliacaoAtendimento itemAvaliacao = new ItemAvaliacaoAtendimento();
-				itemAvaliacao.setItemAvaliacao(item);
-				itemAvaliacao.setAvaliacaoAtendimento(avaliacaoAtendimento);
-				avaliacaoAtendimento.addItem(itemAvaliacao);
+				avaliacaoAtendimento.addItem(new ItemAvaliacaoAtendimento(item, avaliacaoAtendimento));
 			}
 			avaliacaoAtendimento.setAvaliacao(avaliacao);
 			avaliacaoAtendimentoRepository.saveAndFlush(avaliacaoAtendimento);
@@ -159,13 +157,9 @@ public class AtendimentoServiceImpl implements AtendimentoService {
 
 		old.getAvaliacao().setAvaliacao(avaliacaoOld);
 
-		ItemAvaliacaoAtendimento avaliacaoAtendimento = new ItemAvaliacaoAtendimento();
-		avaliacaoAtendimento.setItemAvaliacao(itemOld);
-		avaliacaoAtendimento.setNota(Double.valueOf(nota));
-
+		ItemAvaliacaoAtendimento avaliacaoAtendimento = new ItemAvaliacaoAtendimento(Double.valueOf(nota), itemOld);
 		old.getAvaliacao().addItem(avaliacaoAtendimento);
 		old.getAvaliacao().setData(new Date());
-
 		atendimentoRepository.save(old);
 
 		return old;
