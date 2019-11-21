@@ -77,8 +77,8 @@ public class ProcedimentoServiceImpl implements ProcedimentoService {
 
 		Local local = Local.valueOf(localString);
 
-		List<Procedimento> procedimentos = new ArrayList<Procedimento>();
-
+		List<Procedimento> procedimentos = new ArrayList<>();
+		
 		FaceDente face = null;
 		Dente dente = null;
 		
@@ -91,10 +91,12 @@ public class ProcedimentoServiceImpl implements ProcedimentoService {
 			dente = Dente.valueOf("D" + faceDente);
 		}
 		
+		
+		List<TipoProcedimento> tipoProcedimentos = getListTipoProcedimento(idProcedimentos);
 		Procedimento procedimento = new Procedimento(dente, face, local, null, 
 								descricao, atendimentos.get(0), odontograma, preExistente);
 		
-		procedimentos = salvarProcedimentos(idProcedimentos, procedimento);
+		procedimentos = salvarProcedimentos(tipoProcedimentos, procedimento);
 		
 		if (patologias != null && !patologias.isEmpty()) {
 
@@ -114,19 +116,28 @@ public class ProcedimentoServiceImpl implements ProcedimentoService {
 		return procedimentos;
 	}
 
-	private List<Procedimento> salvarProcedimentos(List<Integer> idProcedimentos, Procedimento procedimento) {
+	private List<Procedimento> salvarProcedimentos(List<TipoProcedimento> tipoProcedimentos, Procedimento procedimento) {
 		
 		List<Procedimento> procedimentos = new ArrayList<>();
 		
-		for (Integer idTipo : idProcedimentos) {
-			TipoProcedimento tipo = tipoProcedimentoRepository.findOne(idTipo);
-			
+		for (TipoProcedimento tipo : tipoProcedimentos) {
 			procedimento.setTipoProcedimento(tipo);
 			procedimentos.add(procedimento);
 			procedimentoRepository.save(procedimento);
 		}
 		
 		return procedimentos;
+	}
+	
+	private List<TipoProcedimento> getListTipoProcedimento(List<Integer> idProcedimentos){
+		List<TipoProcedimento> tipoProcedimentos = new ArrayList<>();
+		
+		for (Integer idTipo : idProcedimentos) {
+			TipoProcedimento tipo = tipoProcedimentoRepository.findOne(idTipo);
+			tipoProcedimentos.add(tipo);
+		}
+		
+		return tipoProcedimentos;
 	}
 
 	@Override
