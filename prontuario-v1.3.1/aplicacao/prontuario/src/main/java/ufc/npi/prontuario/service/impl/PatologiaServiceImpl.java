@@ -57,63 +57,39 @@ public class PatologiaServiceImpl implements PatologiaService {
 			Integer idOdontograma, String descricao, Aluno aluno) throws ProntuarioException {
 		Odontograma odontograma = odontogramaPatologiaRepository.findOne(idOdontograma);
 
-		// Verificação de restrições
 		List<Atendimento> atendimentos = atendimentoRepository.findAllByResponsavelOrAjudanteExist(aluno,
 				odontograma.getPaciente(), Status.EM_ANDAMENTO);
 
 		if (atendimentos.size() != 1) {
 			throw new ProntuarioException(NENHUM_ATENDIMENTO_ABERTO_EXCEPTION);
 		}
-		// Fim da verificação de restrições
-
-		List<Patologia> patologias = new ArrayList<Patologia>();
-
-		Local local = Local.valueOf(localString);
 
 		FaceDente face = null;
 		Dente dente = null;
-
+		Local local = Local.valueOf(localString);
+		
 		if (local == Local.FACE) {
 			face = FaceDente.valueOf(faceDente.substring(3));
 			dente = Dente.valueOf("D" + faceDente.substring(0, 2));
-
-			patologias = salvarPatologias(idPatologias, face, dente, local, odontograma, descricao, patologias,
-					atendimentos.get(0));
 		}
 
 		else if (local == Local.DENTE) {
-			face = null;
 			dente = Dente.valueOf("D" + faceDente);
-			patologias = salvarPatologias(idPatologias, face, dente, local, odontograma, descricao, patologias,
-					atendimentos.get(0));
 		}
 
-		else if (local == Local.GERAL) {
-			patologias = salvarPatologias(idPatologias, face, dente, local, odontograma, descricao, patologias,
-					atendimentos.get(0));
-		}
-
-		return patologias;
+		Patologia patologia = new Patologia(dente, face, local, descricao, new Date(), odontograma, atendimentos.get(0));
+		
+		return salvarPatologias(idPatologias, patologia);
 	}
 
-	private List<Patologia> salvarPatologias(List<Integer> idPatologias, FaceDente face, Dente dente, Local local,
-			Odontograma odontograma, String descricao, List<Patologia> patologias, Atendimento atendimento) {
-
+	private List<Patologia> salvarPatologias(List<Integer> idPatologias, Patologia patologia) {
+		List<Patologia> patologias = new ArrayList<Patologia>();
+		
 		for (Integer p : idPatologias) {
 			TipoPatologia tipo = tipoPatologiaRepository.findOne(p);
 
-			Patologia patologia = new Patologia();
-			patologia.setDente(dente);
-			patologia.setFace(face);
-			patologia.setLocal(local);
 			patologia.setTipo(tipo);
-			patologia.setData(new Date());
-			patologia.setOdontograma(odontograma);
-			patologia.setDescricao(descricao);
-			patologia.setAtendimento(atendimento);
-
 			patologiaRepository.save(patologia);
-
 			patologias.add(patologia);
 		}
 
