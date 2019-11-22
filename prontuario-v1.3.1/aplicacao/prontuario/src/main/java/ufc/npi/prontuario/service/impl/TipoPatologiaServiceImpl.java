@@ -8,6 +8,7 @@ import ufc.npi.prontuario.repository.TipoPatologiaRepository;
 import ufc.npi.prontuario.service.TipoPatologiaService;
 import ufc.npi.prontuario.util.ExceptionSuccessConstants;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static ufc.npi.prontuario.util.ExceptionSuccessConstants.ERRO_CAMPOS_OBRIGATORIOS;
@@ -62,4 +63,14 @@ public class TipoPatologiaServiceImpl implements TipoPatologiaService {
 
         tipoPatologiaRepository.save(tipoPatologia);
     }
+
+	@Override
+	public List<TipoPatologia> buscarPorIds(List<Integer> idTipos) {
+		List<TipoPatologia> tipos = new ArrayList<>();
+		for (Integer idTipo : idTipos) {
+			tipos.add(tipoPatologiaRepository.getOne(idTipo));
+		}
+		
+		return tipos;
+	}
 }

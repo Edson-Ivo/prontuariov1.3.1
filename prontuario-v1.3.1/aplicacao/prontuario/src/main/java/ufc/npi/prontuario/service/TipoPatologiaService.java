@@ -15,8 +15,10 @@ public interface TipoPatologiaService {
 
     List<TipoPatologia> buscarPorNome(String nome);
 
+    List<TipoPatologia> buscarPorIds(List<Integer> idTipos);
+    
     TipoPatologia buscarPorId(Integer id);
 
     void remover(Integer id) throws Exception;
-
+    
 }
