@@ -135,17 +135,21 @@ public class AtendimentoServiceImpl implements AtendimentoService {
 	@Override
 	public Atendimento adicionarAvaliacaoAtendimento(Atendimento atendimento) {
 		if (Objects.isNull(atendimento.getAvaliacao())) {
-			AvaliacaoAtendimento avaliacaoAtendimento = new AvaliacaoAtendimento();
-			Avaliacao avaliacao = avaliacaoRepository.findAvaliacaoAtiva();
-			for (ItemAvaliacao item : avaliacao.getItens()) {
-				avaliacaoAtendimento.addItem(new ItemAvaliacaoAtendimento(item, avaliacaoAtendimento));
-			}
-			avaliacaoAtendimento.setAvaliacao(avaliacao);
-			avaliacaoAtendimentoRepository.saveAndFlush(avaliacaoAtendimento);
-			atendimento.setAvaliacao(avaliacaoAtendimento);
+			atendimento.setAvaliacao(getAvaliacaoAtendimento());
 			atendimentoRepository.saveAndFlush(atendimento);
 		}
 		return atendimento;
+	}
+	
+	private AvaliacaoAtendimento getAvaliacaoAtendimento() {
+		AvaliacaoAtendimento avaliacaoAtendimento = new AvaliacaoAtendimento();
+		Avaliacao avaliacaoAtiva = avaliacaoRepository.findAvaliacaoAtiva();
+		for (ItemAvaliacao item : avaliacaoAtiva.getItens()) {
+			avaliacaoAtendimento.addItem(new ItemAvaliacaoAtendimento(item, avaliacaoAtendimento));
+		}
+		avaliacaoAtendimento.setAvaliacao(avaliacaoAtiva);
+		avaliacaoAtendimentoRepository.saveAndFlush(avaliacaoAtendimento);
+		return avaliacaoAtendimento;
 	}
 
 	@Override
