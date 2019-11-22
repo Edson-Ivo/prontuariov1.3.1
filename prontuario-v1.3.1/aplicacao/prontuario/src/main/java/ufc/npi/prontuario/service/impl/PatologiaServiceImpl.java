@@ -31,6 +31,7 @@ import ufc.npi.prontuario.repository.PatologiaRepository;
 import ufc.npi.prontuario.repository.ServidorRepository;
 import ufc.npi.prontuario.repository.TipoPatologiaRepository;
 import ufc.npi.prontuario.service.PatologiaService;
+import ufc.npi.prontuario.service.TipoPatologiaService;
 
 @Service
 public class PatologiaServiceImpl implements PatologiaService {
@@ -43,6 +44,9 @@ public class PatologiaServiceImpl implements PatologiaService {
 
 	@Autowired
 	private TipoPatologiaRepository tipoPatologiaRepository;
+	
+	@Autowired
+	private TipoPatologiaService tipoPatologiaService;
 
 	@Autowired
 	private AtendimentoRepository atendimentoRepository;
@@ -84,10 +88,9 @@ public class PatologiaServiceImpl implements PatologiaService {
 
 	private List<Patologia> salvarPatologias(List<Integer> idPatologias, Patologia patologia) {
 		List<Patologia> patologias = new ArrayList<Patologia>();
-		
-		for (Integer p : idPatologias) {
-			TipoPatologia tipo = tipoPatologiaRepository.findOne(p);
+		List<TipoPatologia> tipos = tipoPatologiaService.buscarPorIds(idPatologias);
 
+		for (TipoPatologia tipo : tipos) {
 			patologia.setTipo(tipo);
 			patologiaRepository.save(patologia);
 			patologias.add(patologia);

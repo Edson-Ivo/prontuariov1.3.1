@@ -14,7 +14,6 @@ public interface TipoPatologiaRepository extends JpaRepository<TipoPatologia, In
     @Query("FROM TipoPatologia ORDER BY nome")
     List<TipoPatologia> findAll();
     
-    
     List<TipoPatologia> findByNomeContainingIgnoreCase(String nome);
 
     TipoPatologia findByCodigo(String codigo);
