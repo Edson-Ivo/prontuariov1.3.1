@@ -23,7 +23,19 @@ public class ItemAvaliacaoAtendimento {
 	@JsonIgnore
 	@ManyToOne
 	private AvaliacaoAtendimento avaliacaoAtendimento;
+	
+	
 
+	public ItemAvaliacaoAtendimento(double nota, ItemAvaliacao itemAvaliacao) {
+		this.nota = nota;
+		this.itemAvaliacao = itemAvaliacao;
+	}
+
+	public ItemAvaliacaoAtendimento(ItemAvaliacao itemAvaliacao, AvaliacaoAtendimento avaliacaoAtendimento) {
+		this.itemAvaliacao = itemAvaliacao;
+		this.avaliacaoAtendimento = avaliacaoAtendimento;
+	}
+	
 	public Integer getId() {
 		return id;
 	}

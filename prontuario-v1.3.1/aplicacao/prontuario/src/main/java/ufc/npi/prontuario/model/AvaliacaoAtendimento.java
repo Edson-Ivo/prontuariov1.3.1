@@ -31,7 +31,15 @@ public class AvaliacaoAtendimento {
 
 	@ManyToOne
 	private Avaliacao avaliacao;
-
+	
+	public AvaliacaoAtendimento() {}
+	
+	public AvaliacaoAtendimento(String observacao, Avaliacao avaliacao) {
+		this.observacao = observacao;
+		this.avaliacao = avaliacao;
+		this.itens = new ArrayList<>();
+	}
+	
 	@OneToMany(mappedBy = "avaliacaoAtendimento", cascade = { CascadeType.ALL })
 	private List<ItemAvaliacaoAtendimento> itens;
 
