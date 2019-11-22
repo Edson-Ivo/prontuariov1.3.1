@@ -41,6 +41,18 @@ public class Procedimento implements Comparable<Procedimento> {
 	private Odontograma odontograma;
 
 	private Boolean preExistente;
+	
+	public Procedimento(Dente dente, FaceDente face, Local local, TipoProcedimento tipoProcedimento, String descricao,
+			Atendimento atendimento, Odontograma odontograma, Boolean preExistente) {
+		this.dente = dente;
+		this.face = face;
+		this.local = local;
+		this.tipoProcedimento = tipoProcedimento;
+		this.descricao = descricao;
+		this.atendimento = atendimento;
+		this.odontograma = odontograma;
+		this.preExistente = preExistente;
+	}
 
 	public Integer getId() {
 		return id;

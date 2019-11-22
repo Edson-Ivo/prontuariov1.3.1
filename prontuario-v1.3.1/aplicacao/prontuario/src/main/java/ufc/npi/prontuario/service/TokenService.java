@@ -14,4 +14,6 @@ public interface TokenService {
 	void salvar(Token token);
 
 	void deletar(Token token);
+
+	void enviarTokenDeRecuperacao(Usuario usuario);
 }
