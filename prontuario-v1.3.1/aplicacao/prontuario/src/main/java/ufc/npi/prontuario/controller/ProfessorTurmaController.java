@@ -6,6 +6,7 @@ import static ufc.npi.prontuario.util.ExceptionSuccessConstants.SUCCESS;
 import static ufc.npi.prontuario.util.ExceptionSuccessConstants.SUCCESS_DESVINCULAR_PROFESSOR;
 import static ufc.npi.prontuario.util.ExceptionSuccessConstants.SUCCESS_VINCULAR_PROFESSOR;
 import static ufc.npi.prontuario.util.FragmentsConstants.FRAGMENT_PROFESSORES;
+import static ufc.npi.prontuario.util.PagesConstants.FORMULARIO_ADICIONAR_TURMA;
 import static ufc.npi.prontuario.util.RedirectConstants.REDIRECT_DETALHES_TURMA;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import ufc.npi.prontuario.exception.ProntuarioException;
 import ufc.npi.prontuario.model.Servidor;
 import ufc.npi.prontuario.model.Turma;
+import ufc.npi.prontuario.service.DisciplinaService;
+import ufc.npi.prontuario.service.ServidorService;
 import ufc.npi.prontuario.service.TurmaService;
 
 @Controller
@@ -31,6 +34,21 @@ public class ProfessorTurmaController {
 
 	@Autowired
 	private TurmaService turmaService;
+	
+	@Autowired
+	private DisciplinaService disciplinaService;
+
+	@Autowired
+	private ServidorService servidorService;
+	
+	@PreAuthorize(PERMISSAO_ADMINISTRACAO)
+	@GetMapping("/adicionar")
+	public ModelAndView formularioAdicionarTurma(Turma turma) {
+		ModelAndView modelAndView = new ModelAndView(FORMULARIO_ADICIONAR_TURMA);
+		modelAndView.addObject("professores", servidorService.buscarProfessores());
+		modelAndView.addObject("disciplinas", disciplinaService.buscarTudo());
+		return modelAndView;
+	}
 	
 	@PreAuthorize(PERMISSAO_ADMINISTRACAO)
 	@PostMapping("/{idTurma}/adicionar-professor")

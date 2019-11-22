@@ -9,7 +9,6 @@ import static ufc.npi.prontuario.util.ExceptionSuccessConstants.SUCCESS_ALTERAR_
 import static ufc.npi.prontuario.util.ExceptionSuccessConstants.SUCCESS_CADASTRAR_TURMA;
 import static ufc.npi.prontuario.util.ExceptionSuccessConstants.SUCCESS_EXCLUIR_TURMA;
 import static ufc.npi.prontuario.util.FragmentsConstants.FRAGMENT_STATUS_TURMA;
-import static ufc.npi.prontuario.util.PagesConstants.FORMULARIO_ADICIONAR_TURMA;
 import static ufc.npi.prontuario.util.PagesConstants.PAGINA_DETALHES_TURMA;
 import static ufc.npi.prontuario.util.PagesConstants.PAGINA_LISTAGEM_TURMAS;
 import static ufc.npi.prontuario.util.RedirectConstants.REDIRECT_DETALHES_TURMA;
@@ -37,8 +36,6 @@ import ufc.npi.prontuario.exception.ProntuarioException;
 import ufc.npi.prontuario.model.Servidor;
 import ufc.npi.prontuario.model.Turma;
 import ufc.npi.prontuario.model.Usuario;
-import ufc.npi.prontuario.service.DisciplinaService;
-import ufc.npi.prontuario.service.ServidorService;
 import ufc.npi.prontuario.service.TurmaService;
 
 @Controller
@@ -49,25 +46,13 @@ public class TurmaController {
 	private TurmaService turmaService;
 
 	@Autowired
-	private DisciplinaService disciplinaService;
-
-	@Autowired
-	private ServidorService servidorService;
+	private ProfessorTurmaController profTurmaController;
 
 	@PreAuthorize(PERMISSOES_PROFESSOR_ADMINISTRACAO)
 	@GetMapping(value = "/listar")
 	public ModelAndView listarTurmas(Authentication auth) {
 		ModelAndView modelAndView = new ModelAndView(PAGINA_LISTAGEM_TURMAS);
 		modelAndView.addObject("turmas", turmaService.buscarTurmas((Servidor) auth.getPrincipal()));
-		return modelAndView;
-	}
-
-	@PreAuthorize(PERMISSAO_ADMINISTRACAO)
-	@GetMapping("/adicionar")
-	public ModelAndView formularioAdicionarTurma(Turma turma) {
-		ModelAndView modelAndView = new ModelAndView(FORMULARIO_ADICIONAR_TURMA);
-		modelAndView.addObject("professores", servidorService.buscarProfessores());
-		modelAndView.addObject("disciplinas", disciplinaService.buscarTudo());
 		return modelAndView;
 	}
 
@@ -85,7 +70,7 @@ public class TurmaController {
 			attributes.addFlashAttribute(SUCCESS, SUCCESS_CADASTRAR_TURMA);
 		} catch(ProntuarioException e) {
 			attributes.addFlashAttribute(ERROR, e.getMessage());
-			return formularioAdicionarTurma(turma);
+			return profTurmaController.formularioAdicionarTurma(turma);
 		}
 
 		return new ModelAndView(REDIRECT_DETALHES_TURMA + turma.getId());
