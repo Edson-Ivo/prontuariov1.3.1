@@ -82,72 +82,6 @@ public class Paciente {
     @OneToMany(mappedBy = "paciente")
     private List<PlanoTratamento> tratamentos;
 
-    public enum Sexo {
-        M("Masculino"), F("Feminino");
-
-        private String descricao;
-
-        private Sexo(String descricao) {
-            this.descricao = descricao;
-        }
-
-        public String getDescricao() {
-            return descricao;
-        }
-    }
-
-    public enum EstadoCivil {
-        SOLTEIRO("Solteiro(a)"), CASADO("Casado(a)"), DIVORCIADO("Divorciado(a)"), VIUVO("Viúvo(a)"), SEPARADO(
-                "Separado(a)"), COMPANHEIRO("Companheiro(a)");
-
-        private String descricao;
-
-        private EstadoCivil(String descricao) {
-            this.descricao = descricao;
-        }
-
-        public String getDescricao() {
-            return descricao;
-        }
-    }
-
-    public enum Estado {
-        AC("Acre"), AL("Alagoas"), AM("Amazonas"), AP("Amapá"), BA("Bahia"), CE("Ceará"), DF("Distrito Federal"), ES(
-                "Espirito Santo"), GO("Goias"), MA("Maranhão"), MG("Minas Gerais"), MS("Mato Grosso Sul"), MT(
-                "Mato Grosso"), PA("Pará"), PB("Paraiba"), PE("Pernanbuco"), PI("Piaui"), PR("Parana"), RJ(
-                "Rio de Janeiro"), RN("Rio Grande do Norte"), RO("Rondônia"), RR("Roraima"), RS(
-                "Rio Grande do Sul"), SC(
-                "Santa Catarina"), SE("Sergipe"), SP("São Paulo"), TO("Tocantins");
-        private String descricao;
-
-        private Estado(String descricao) {
-            this.descricao = descricao;
-        }
-
-        public String getDescricao() {
-            return descricao;
-        }
-    }
-
-    public enum Raca {
-        BRANCA("Branca"),
-        PRETA("Preta"),
-        PARDA("Parda"),
-        AMARELA("Amarela"),
-        INDIGENA("Indígena"),
-        SEM_INFORMACAO("Sem Informação");
-
-        private String descricao;
-
-        private Raca(String descricao) {
-            this.descricao = descricao;
-        }
-
-        public String getDescricao() {
-            return descricao.toUpperCase();
-        }
-    }
-
     public Integer getId() {
         return id;
     }
@@ -285,15 +219,15 @@ public class Paciente {
     }
 
     public boolean temSexo() {
-        return (this.sexo != null) ? true : false;
+        return this.sexo != null;
     }
 
     public boolean temEstadoCivil() {
-        return (this.estadoCivil != null) ? true : false;
+        return this.estadoCivil != null;
     }
 
     public boolean temEstado() {
-        return (this.estado != null) ? true : false;
+        return this.estado != null;
     }
 
     public Odontograma getOdontograma() {
@@ -398,11 +332,8 @@ public class Paciente {
             return false;
         Paciente other = (Paciente) obj;
         if (id == null) {
-            if (other.id != null)
-                return false;
-        } else if (!id.equals(other.id))
-            return false;
-        return true;
+            return other.id == null;
+        } else return id.equals(other.id);
     }
 
 }
