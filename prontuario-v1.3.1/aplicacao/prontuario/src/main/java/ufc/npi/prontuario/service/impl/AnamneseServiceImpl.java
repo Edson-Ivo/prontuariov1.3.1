@@ -44,18 +44,24 @@ public class AnamneseServiceImpl implements AnamneseService {
 
 		Anamnese anamnese = anamneseRepository.findOne(idAnamnese);
 
-		if (anamnese != null && anamnese.getStatus() != Status.FINALIZADA) {
-			if (anamnese.getPerguntas().isEmpty()) {
-				pergunta.setOrdem(1);
-			} else {
-				pergunta.setOrdem(anamnese.getPerguntas().get(anamnese.getPerguntas().size() - 1).getOrdem() + 1);
-			}
+		if (validarAnamnese(anamnese)) {
+
+			pergunta.setOrdem(ordemDaPergunta(anamnese.getPerguntas()));
+
 			pergunta.setAnamnese(anamnese);
 
 			anamnese.getPerguntas().add(pergunta);
 
 			anamneseRepository.save(anamnese);
 		}
+	}
+
+	private boolean validarAnamnese(Anamnese anamnese) {
+		return anamnese != null && anamnese.getStatus() != Status.FINALIZADA;
+	}
+
+	private int ordemDaPergunta(List<Pergunta> perguntas){
+		return perguntas.isEmpty() ? 1 : perguntas.get(perguntas.size() - 1).getOrdem() + 1;
 	}
 
 	@Override
