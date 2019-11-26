@@ -60,16 +60,22 @@ public class AnamneseServiceImpl implements AnamneseService {
 
 	@Override
 	public void excluirPergunta(Pergunta pergunta, Anamnese anamnese) {
+		perguntaRepository.delete(pergunta);
+		
+		removerPerguntaDaAnamnese(anamnese, pergunta);
+	}
+	
+	private void removerPerguntaDaAnamnese(Anamnese anamnese, Pergunta pergunta) {
 		if (anamnese.getStatus() != Status.FINALIZADA) {
-			perguntaRepository.delete(pergunta);
+			List<Pergunta> perguntas = anamnese.getPerguntas();
 			
-			removerPerguntaLista(anamnese.getPerguntas(), pergunta);
+			removerPerguntaDaLista(perguntas, pergunta);
 			
 			anamneseRepository.saveAndFlush(anamnese);
 		}
 	}
 	
-	private void removerPerguntaLista(List<Pergunta> perguntas, Pergunta pergunta) {
+	private void removerPerguntaDaLista(List<Pergunta> perguntas, Pergunta pergunta) {
 		int posicaoPergunta = perguntas.indexOf(pergunta);
 		
 		if (posicaoPergunta > -1) {
