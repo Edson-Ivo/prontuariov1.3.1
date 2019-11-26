@@ -99,26 +99,23 @@ public class PacienteController {
 
 	@PostMapping("/cadastrar")
 	public ModelAndView cadastrarPaciente(Paciente paciente, RedirectAttributes attributes) {
+
 		ModelAndView modelAndView = new ModelAndView(REDIRECT_LISTAGEM_PACIENTES);
 
 		try {
 			pacienteService.salvar(paciente);
 			attributes.addFlashAttribute(SUCCESS, SUCCESS_CADASTRAR_PACIENTE);
 		} catch (ProntuarioException e) {
-			setPacienteModelAndViewDefaultValues(modelAndView);
+			modelAndView.addObject("sexo", Sexo.values());
+			modelAndView.addObject("estado", Estado.values());
+			modelAndView.addObject("estadoCivil", EstadoCivil.values());
+			modelAndView.addObject("raca", Paciente.Raca.values());
+			modelAndView.addObject("action", "cadastrar");
 			modelAndView.addObject(ERROR, e.getMessage());
 			modelAndView.setViewName(FORMULARIO_CADASTRO_PACIENTE);
 		}
 
 		return modelAndView;
-	}
-
-	public void setPacienteModelAndViewDefaultValues(ModelAndView modelAndView) {
-		modelAndView.addObject("sexo", Sexo.values());
-		modelAndView.addObject("estado", Estado.values());
-		modelAndView.addObject("estadoCivil", EstadoCivil.values());
-		modelAndView.addObject("raca", Paciente.Raca.values());
-		modelAndView.addObject("action", "cadastrar");
 	}
 
 	@GetMapping("/editar/{idPaciente}")
