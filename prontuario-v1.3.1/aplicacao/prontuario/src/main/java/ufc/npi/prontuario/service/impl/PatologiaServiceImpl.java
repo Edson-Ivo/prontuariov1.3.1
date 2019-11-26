@@ -29,7 +29,6 @@ import ufc.npi.prontuario.repository.AtendimentoRepository;
 import ufc.npi.prontuario.repository.OdontogramaRepository;
 import ufc.npi.prontuario.repository.PatologiaRepository;
 import ufc.npi.prontuario.repository.ServidorRepository;
-import ufc.npi.prontuario.repository.TipoPatologiaRepository;
 import ufc.npi.prontuario.service.PatologiaService;
 import ufc.npi.prontuario.service.TipoPatologiaService;
 
@@ -41,9 +40,6 @@ public class PatologiaServiceImpl implements PatologiaService {
 
 	@Autowired
 	private PatologiaRepository patologiaRepository;
-
-	@Autowired
-	private TipoPatologiaRepository tipoPatologiaRepository;
 	
 	@Autowired
 	private TipoPatologiaService tipoPatologiaService;
@@ -82,21 +78,29 @@ public class PatologiaServiceImpl implements PatologiaService {
 		}
 
 		Patologia patologia = new Patologia(dente, face, local, descricao, new Date(), odontograma, atendimentos.get(0));
+		List<Patologia> patologias = setarTiposPatologias(idPatologias, patologia);
+		salvarPatologias(patologias);
 		
-		return salvarPatologias(idPatologias, patologia);
+		return patologias;
 	}
 
-	private List<Patologia> salvarPatologias(List<Integer> idPatologias, Patologia patologia) {
+	private List<Patologia> setarTiposPatologias(List<Integer> idPatologias, Patologia patologia) {
 		List<Patologia> patologias = new ArrayList<Patologia>();
 		List<TipoPatologia> tipos = tipoPatologiaService.buscarPorIds(idPatologias);
-
+		
 		for (TipoPatologia tipo : tipos) {
 			patologia.setTipo(tipo);
-			patologiaRepository.save(patologia);
 			patologias.add(patologia);
 		}
-
+		
 		return patologias;
+	}
+
+	private void salvarPatologias(List<Patologia> patologias) {
+		
+		for (Patologia patologia : patologias) {			
+			patologiaRepository.save(patologia);
+		}
 	}
 
 	@Override
