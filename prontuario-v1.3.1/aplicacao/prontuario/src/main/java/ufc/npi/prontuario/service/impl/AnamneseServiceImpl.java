@@ -110,27 +110,38 @@ public class AnamneseServiceImpl implements AnamneseService {
 		if (anamneseOld.getStatus().equals(Status.EM_ANDAMENTO)) {
 
 			Pergunta a = anamneseOld.getPerguntas().get(novaOrdem - 1);
-			int indexPerguntaAntiga = anamneseOld.getPerguntas().indexOf(a);
-			int indexPergunta = anamneseOld.getPerguntas().indexOf(old);
+			int indexPerguntaAntiga = pegarIndexPergunta(a, anamneseOld);
+			int indexPergunta = pegarIndexPergunta(old, anamneseOld);
 
 			anamneseOld.getPerguntas().remove(old);
+			Pergunta perguntaIter;
 			if (novaOrdem > old.getOrdem()) {
 				for (int i = indexPergunta; i < indexPerguntaAntiga; i++) {
-					anamneseOld.getPerguntas().get(i).setOrdem(anamneseOld.getPerguntas().get(i).getOrdem() - 1);
+					perguntaIter = anamneseOld.getPerguntas().get(i);
+					aplicarNovaOrdem(perguntaIter, perguntaIter.getOrdem() - 1);
 				}
 
 			} else {
 				for (int i = indexPergunta - 1; i >= indexPerguntaAntiga; i--) {
-					anamneseOld.getPerguntas().get(i).setOrdem(anamneseOld.getPerguntas().get(i).getOrdem() + 1);
+					perguntaIter = anamneseOld.getPerguntas().get(i);
+					aplicarNovaOrdem(perguntaIter, perguntaIter.getOrdem() + 1);
 				}
 			}
-			old.setOrdem(novaOrdem);
+			aplicarNovaOrdem(old, novaOrdem);
 			anamneseOld.addPergunta(old);
 			Collections.sort(anamneseOld.getPerguntas());
 			anamneseRepository.save(anamneseOld);
 		}
 		return anamneseOld;
 
+	}
+
+	private int pegarIndexPergunta(Pergunta pergunta, Anamnese anamnese) {
+		return anamnese.getPerguntas().indexOf(pergunta);
+	}
+
+	private void aplicarNovaOrdem(Pergunta pergunta, int index) {
+		pergunta.setOrdem(index);
 	}
 
 }
