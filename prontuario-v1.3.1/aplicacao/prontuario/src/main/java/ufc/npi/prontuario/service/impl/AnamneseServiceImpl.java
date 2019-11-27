@@ -41,19 +41,22 @@ public class AnamneseServiceImpl implements AnamneseService {
 
 	@Override
 	public void salvarPergunta(Pergunta pergunta, Integer idAnamnese) {
+		Anamnese anamnese = addPerguntaEmAnamnese(pergunta, idAnamnese);
+		if (anamnese != null) {
+			anamneseRepository.save(anamnese);
+		}
+	}
 
+	private Anamnese addPerguntaEmAnamnese(Pergunta pergunta, Integer idAnamnese) {
 		Anamnese anamnese = anamneseRepository.findOne(idAnamnese);
 
 		if (validarAnamnese(anamnese)) {
-
 			pergunta.setOrdem(ordemDaPergunta(anamnese.getPerguntas()));
-
 			pergunta.setAnamnese(anamnese);
-
 			anamnese.getPerguntas().add(pergunta);
-
-			anamneseRepository.save(anamnese);
+			return anamnese;
 		}
+		return null;
 	}
 
 	private boolean validarAnamnese(Anamnese anamnese) {
