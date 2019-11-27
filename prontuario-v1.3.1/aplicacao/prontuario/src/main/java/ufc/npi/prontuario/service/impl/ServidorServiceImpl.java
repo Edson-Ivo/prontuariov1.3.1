@@ -38,23 +38,33 @@ public class ServidorServiceImpl implements ServidorService {
 
 	@Override
 	public void salvar(Servidor servidor) throws ProntuarioException {
-		if(servidor.getNome().replaceAll(" ", "").length() == 0){
+		if(verificarValidadeDoServidor(servidor)){
 			throw new ProntuarioException(ERRO_ADICIONAR_SERVIDOR_VAZIO);
 		}
 		
-		if (usuarioRepository.findByEmail(servidor.getEmail()) != null || usuarioRepository.findByMatricula(servidor.getMatricula()) != null) {
+		if (verificarEmailMatricula(servidor)) {
 			throw new ProntuarioException(ERRO_ADICIONAR_SERVIDOR);
 		}
 				
-		if(servidor.getPapeis().size() == 0){
+		if(verificarServidorTemPapeis(servidor)){
 			throw new ProntuarioException(ERRO_ADICIONAR_SERVIDOR_PAPEL);
 		}
-		
-		
-		
+
 		servidor.setSenha(servidor.getMatricula());
 		servidor.encodePassword();
 		servidorRepository.save(servidor);
+	}
+
+	private boolean verificarValidadeDoServidor(Servidor servidor) {
+		return servidor.getNome().replaceAll(" ", "").length() == 0;
+	}
+
+	private boolean verificarEmailMatricula(Servidor servidor) {
+		return usuarioRepository.findByEmail(servidor.getEmail()) != null || usuarioRepository.findByMatricula(servidor.getMatricula()) != null;
+	}
+
+	private boolean verificarServidorTemPapeis(Servidor servidor) {
+		return servidor.getPapeis().size() == 0;
 	}
 
 	public void atualizar(Servidor servidor) throws ProntuarioException {
