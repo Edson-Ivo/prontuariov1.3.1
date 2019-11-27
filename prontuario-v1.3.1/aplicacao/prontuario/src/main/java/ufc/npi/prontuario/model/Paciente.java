@@ -12,7 +12,7 @@ import javax.validation.constraints.NotNull;
 import org.springframework.format.annotation.DateTimeFormat;
 
 @Entity
-public class Paciente {
+public class Paciente extends PacienteDocumento {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -75,9 +75,6 @@ public class Paciente {
     @OrderBy("data DESC")
     @OneToMany(mappedBy = "paciente", cascade = CascadeType.MERGE)
     private List<Atendimento> atendimentos;
-
-    @OneToMany(cascade = CascadeType.MERGE)
-    private List<Documento> documentos;
 
     @OneToMany(mappedBy = "paciente")
     private List<PlanoTratamento> tratamentos;
@@ -244,26 +241,6 @@ public class Paciente {
 
     public void setAtendimentos(List<Atendimento> atendimentos) {
         this.atendimentos = atendimentos;
-    }
-
-    public List<Documento> getDocumentos() {
-        return documentos;
-    }
-
-    public void addDocumento(Documento documento) {
-        if (this.documentos == null) {
-            this.documentos = new ArrayList<>();
-        }
-
-        this.documentos.add(documento);
-    }
-
-    public List<PlanoTratamento> getTratamentos() {
-        return tratamentos;
-    }
-
-    public void removerDocumento(Documento documento) {
-        this.documentos.remove(documento);
     }
 
     public String getCns() {
