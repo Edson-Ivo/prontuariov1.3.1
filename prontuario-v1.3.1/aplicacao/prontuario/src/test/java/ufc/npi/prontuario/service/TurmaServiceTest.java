@@ -166,7 +166,7 @@ public class TurmaServiceTest extends AbstractServiceTest{
 		professores.add(professor3);
 		
 		turmaService.adicionarProfessorTurma(turma, professores);
-		assertEquals(3, turmaService.buscarPorId(1).getProfessores().size());
+		assertEquals(3, turma.getProfessores().size());
 	}
 	
 	@Test
