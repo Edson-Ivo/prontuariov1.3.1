@@ -2,6 +2,8 @@ package ufc.npi.prontuario.service;
 
 import java.util.List;
 
+import org.springframework.security.core.Authentication;
+
 import ufc.npi.prontuario.exception.ProntuarioException;
 import ufc.npi.prontuario.model.Aluno;
 import ufc.npi.prontuario.model.Odontograma;
@@ -14,7 +16,7 @@ public interface PatologiaService {
 	public List<Patologia> salvar(String faceDente, List<Integer> idPatologias, String localString,
 			Integer idOdontograma, String descricao, Aluno aluno) throws ProntuarioException;
 
-	void tratar(Patologia patologia, Tratamento tratamento);
+	void tratar(Patologia patologia, Tratamento tratamento, Authentication auth);
 
 	List<Patologia> buscarPatologiasOdontograma(Odontograma odontograma, Usuario usuario);
 

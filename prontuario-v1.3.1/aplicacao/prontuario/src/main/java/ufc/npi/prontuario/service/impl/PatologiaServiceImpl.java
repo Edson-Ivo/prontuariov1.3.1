@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import ufc.npi.prontuario.exception.ProntuarioException;
@@ -104,7 +105,9 @@ public class PatologiaServiceImpl implements PatologiaService {
 	}
 
 	@Override
-	public void tratar(Patologia patologia, Tratamento tratamento) {
+	public void tratar(Patologia patologia, Tratamento tratamento, Authentication auth) {
+		Aluno aluno = (Aluno) auth.getPrincipal();
+		tratamento.setResponsavel(aluno);
 		patologia.setTratamento(tratamento);
 		patologiaRepository.saveAndFlush(patologia);
 	}
