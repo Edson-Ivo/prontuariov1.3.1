@@ -157,13 +157,9 @@ public class TurmaServiceTest extends AbstractServiceTest{
 	@Test
 	public void testAdicionarProfessorTurma(){
 		Turma turma = turmaService.buscarPorId(1);
-		Servidor professor2 = new Servidor();
-		professor2.setId(102);
-		Servidor professor3 = new Servidor();
-		professor3.setId(103);
 		List<Servidor> professores = new ArrayList<Servidor>();
-		professores.add(professor2);
-		professores.add(professor3);
+		professores.add(servidorService.buscarPorId(102));
+		professores.add(servidorService.buscarPorId(103));
 		
 		turmaService.adicionarProfessorTurma(turma, professores);
 		assertEquals(3, turma.getProfessores().size());
