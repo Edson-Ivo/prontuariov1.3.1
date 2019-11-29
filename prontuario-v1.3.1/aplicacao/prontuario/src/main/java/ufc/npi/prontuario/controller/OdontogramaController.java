@@ -203,15 +203,19 @@ public class OdontogramaController {
 	@PostMapping("/tratar/{idPatologia}")
 	public ResponseEntity<?> tratarPatologia(@PathVariable("idPatologia") Patologia patologia,
 			@ModelAttribute Tratamento tratamento, Authentication auth) {
-		Aluno aluno = (Aluno) auth.getPrincipal();
-		tratamento.setResponsavel(aluno);
-
-		patologiaService.tratar(patologia, tratamento);
+		DefinirResponsavelTratamento(tratamento, auth, patologia);
+		patologiaService.tratar(patologia);
 		ResponseEntity<List<Patologia>> responseEntity = new ResponseEntity<List<Patologia>>(
 				patologiaService.buscarPatologiasTratadas(patologia.getOdontograma()), HttpStatus.OK);
 		return responseEntity;
 	}
+	
+	public void DefinirResponsavelTratamento(Tratamento tratamento, Authentication auth, Patologia patologia) {
+		tratamento.setResponsavel((Aluno) auth.getPrincipal());
+		patologia.setTratamento(tratamento);
+	}
 
+	
 	@GetMapping("/buscar-patologia")
 	public @ResponseBody List<TipoPatologia> buscaPatologia(@RequestParam("query") String query) {
 
