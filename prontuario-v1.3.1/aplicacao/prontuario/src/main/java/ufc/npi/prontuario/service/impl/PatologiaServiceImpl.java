@@ -105,10 +105,7 @@ public class PatologiaServiceImpl implements PatologiaService {
 	}
 
 	@Override
-	public void tratar(Patologia patologia, Tratamento tratamento, Authentication auth) {
-		Aluno aluno = (Aluno) auth.getPrincipal();
-		tratamento.setResponsavel(aluno);
-		patologia.setTratamento(tratamento);
+	public void tratar(Patologia patologia) {
 		patologiaRepository.saveAndFlush(patologia);
 	}
 

@@ -16,7 +16,7 @@ public interface PatologiaService {
 	public List<Patologia> salvar(String faceDente, List<Integer> idPatologias, String localString,
 			Integer idOdontograma, String descricao, Aluno aluno) throws ProntuarioException;
 
-	void tratar(Patologia patologia, Tratamento tratamento, Authentication auth);
+	void tratar(Patologia patologia);
 
 	List<Patologia> buscarPatologiasOdontograma(Odontograma odontograma, Usuario usuario);
 

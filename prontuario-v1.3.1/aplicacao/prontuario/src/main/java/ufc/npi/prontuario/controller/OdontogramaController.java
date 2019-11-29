@@ -203,10 +203,16 @@ public class OdontogramaController {
 	@PostMapping("/tratar/{idPatologia}")
 	public ResponseEntity<?> tratarPatologia(@PathVariable("idPatologia") Patologia patologia,
 			@ModelAttribute Tratamento tratamento, Authentication auth) {
-		patologiaService.tratar(patologia, tratamento, auth);
+		DefinirResponsavelTratamento(tratamento, auth, patologia);
+		patologiaService.tratar(patologia);
 		ResponseEntity<List<Patologia>> responseEntity = new ResponseEntity<List<Patologia>>(
 				patologiaService.buscarPatologiasTratadas(patologia.getOdontograma()), HttpStatus.OK);
 		return responseEntity;
+	}
+	
+	public void DefinirResponsavelTratamento(Tratamento tratamento, Authentication auth, Patologia patologia) {
+		tratamento.setResponsavel((Aluno) auth.getPrincipal());
+		patologia.setTratamento(tratamento);
 	}
 
 	
