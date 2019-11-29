@@ -107,41 +107,60 @@ public class AnamneseServiceImpl implements AnamneseService {
 	public Anamnese alterarOrdemAnamnese(Anamnese anamnese, Integer pergunta, Integer novaOrdem) {
 		Pergunta old = perguntaRepository.findOne(pergunta);
 		Anamnese anamneseOld = anamneseRepository.findOne(anamnese.getId());
-		if (anamneseOld.getStatus().equals(Status.EM_ANDAMENTO)) {
+
+		if (anamneseEmAndamento(anamneseOld)) {
 
 			Pergunta a = anamneseOld.getPerguntas().get(novaOrdem - 1);
 			int indexPerguntaAntiga = pegarIndexPergunta(a, anamneseOld);
 			int indexPergunta = pegarIndexPergunta(old, anamneseOld);
 
 			anamneseOld.getPerguntas().remove(old);
-			Pergunta perguntaIter;
-			if (novaOrdem > old.getOrdem()) {
-				for (int i = indexPergunta; i < indexPerguntaAntiga; i++) {
-					perguntaIter = anamneseOld.getPerguntas().get(i);
-					aplicarNovaOrdem(perguntaIter, perguntaIter.getOrdem() - 1);
-				}
 
+			if (novaOrdem > old.getOrdem()) {
+				reodenarPerguntasAsc(indexPergunta, indexPerguntaAntiga, anamneseOld);
 			} else {
-				for (int i = indexPergunta - 1; i >= indexPerguntaAntiga; i--) {
-					perguntaIter = anamneseOld.getPerguntas().get(i);
-					aplicarNovaOrdem(perguntaIter, perguntaIter.getOrdem() + 1);
-				}
+				reodenarPerguntasDesc(indexPergunta, indexPerguntaAntiga, anamneseOld);
 			}
-			aplicarNovaOrdem(old, novaOrdem);
-			anamneseOld.addPergunta(old);
-			Collections.sort(anamneseOld.getPerguntas());
-			anamneseRepository.save(anamneseOld);
+
+			alterarOrdemPergunta(old, novaOrdem);
+
+			adicionarPerguntaEmAnamneseESalvar(anamneseOld, old);
 		}
 		return anamneseOld;
+	}
 
+	private boolean anamneseEmAndamento(Anamnese anamnese) {
+		return anamnese.getStatus().equals(Status.EM_ANDAMENTO);
 	}
 
 	private int pegarIndexPergunta(Pergunta pergunta, Anamnese anamnese) {
 		return anamnese.getPerguntas().indexOf(pergunta);
 	}
 
-	private void aplicarNovaOrdem(Pergunta pergunta, int index) {
+	private void alterarOrdemPergunta(Pergunta pergunta, int index) {
 		pergunta.setOrdem(index);
+	}
+
+	private void reodenarPerguntasAsc (int indexPergunta, int indexPerguntaAntiga, Anamnese anamneseOld) {
+		Pergunta perguntaIter;
+		for (int i = indexPergunta; i < indexPerguntaAntiga; i++) {
+			perguntaIter = anamneseOld.getPerguntas().get(i);
+			alterarOrdemPergunta(perguntaIter, perguntaIter.getOrdem() - 1);
+		}
+	}
+
+	private void reodenarPerguntasDesc (int indexPergunta, int indexPerguntaAntiga, Anamnese anamneseOld) {
+		Pergunta perguntaIter;
+		for (int i = indexPergunta - 1; i >= indexPerguntaAntiga; i--) {
+			perguntaIter = anamneseOld.getPerguntas().get(i);
+			alterarOrdemPergunta(perguntaIter, perguntaIter.getOrdem() + 1);
+		}
+	}
+
+	private void adicionarPerguntaEmAnamneseESalvar(Anamnese anamneseOld, Pergunta old) {
+		anamneseOld.addPergunta(old);
+		Collections.sort(anamneseOld.getPerguntas());
+		anamneseRepository.save(anamneseOld);
 	}
 
 }
