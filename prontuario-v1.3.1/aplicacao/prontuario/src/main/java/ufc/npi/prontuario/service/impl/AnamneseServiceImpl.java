@@ -60,15 +60,33 @@ public class AnamneseServiceImpl implements AnamneseService {
 
 	@Override
 	public void excluirPergunta(Pergunta pergunta, Anamnese anamnese) {
+		perguntaRepository.delete(pergunta);
+		
+		removerPerguntaDaAnamnese(anamnese, pergunta);
+	}
+	
+	private void removerPerguntaDaAnamnese(Anamnese anamnese, Pergunta pergunta) {
 		if (anamnese.getStatus() != Status.FINALIZADA) {
-			int index = anamnese.getPerguntas().indexOf(pergunta);
-
-			for (int i = index + 1; i < anamnese.getPerguntas().size(); i++) {
-				anamnese.getPerguntas().get(i).setOrdem(anamnese.getPerguntas().get(i).getOrdem() - 1);
-			}
-			perguntaRepository.delete(pergunta);
-			anamnese.getPerguntas().remove(pergunta);
+			List<Pergunta> perguntas = anamnese.getPerguntas();
+			
+			removerPerguntaDaLista(perguntas, pergunta);
+			
 			anamneseRepository.saveAndFlush(anamnese);
+		}
+	}
+	
+	private void removerPerguntaDaLista(List<Pergunta> perguntas, Pergunta pergunta) {
+		int posicaoPergunta = perguntas.indexOf(pergunta);
+		
+		if (posicaoPergunta > -1) {
+			List<Pergunta> perguntasParaReordenar = perguntas.subList(posicaoPergunta + 1, perguntas.size());
+			
+			for (Pergunta perguntaParaReordenar : perguntasParaReordenar) {
+				Integer novaOrdem = perguntaParaReordenar.getOrdem() - 1;
+				perguntaParaReordenar.setOrdem(novaOrdem);
+			}
+			
+			perguntas.remove(posicaoPergunta);
 		}
 	}
 
