@@ -251,16 +251,21 @@ public class PacienteController {
 	@PreAuthorize(PERMISSAO_ATENDENTE)
 	@PostMapping("/plano-tratamento/cadastrar")
 	public ModelAndView cadastrar(PlanoTratamento planoTratamento, @RequestParam("paciente") Paciente paciente,
-			@RequestParam("responsavel") Servidor responsavel, RedirectAttributes attributes) {
-		String redirectTratamentos = REDIRECT_INDEX + "paciente/" + paciente.getId() + "/tratamentos";
-		ModelAndView mv = new ModelAndView(redirectTratamentos);
+			@RequestParam("responsavel") Servidor servidorResponsavel, RedirectAttributes attributes) {
+		String tratamentosViewName = REDIRECT_INDEX + "paciente/" + paciente.getId() + "/tratamentos";
+		ModelAndView mv = new ModelAndView(tratamentosViewName);
+		salvarPlanoTratamento(planoTratamento, paciente, servidorResponsavel, attributes);
+		
+		return mv;
+	}
+	
+	private void salvarPlanoTratamento(PlanoTratamento planoTratamento, Paciente paciente, Servidor servidorResponsavel, RedirectAttributes attributes) {
 		try {
-			tratamentoService.salvar(planoTratamento, responsavel, paciente);
+			tratamentoService.salvar(planoTratamento, servidorResponsavel, paciente);
 			attributes.addFlashAttribute(SUCCESS, SUCCESS_CADASTRAR_TRATAMENTO);
 		} catch (ProntuarioException e) {
 			attributes.addFlashAttribute(ERROR, e.getMessage());
 		}
-		return mv;
 	}
 
 	@PreAuthorize(PERMISSAO_ATENDENTE)
