@@ -52,6 +52,22 @@ public class Patologia implements Comparable<Patologia> {
 	@OneToOne(cascade = CascadeType.MERGE)
 	private Tratamento tratamento;
 
+	public Patologia() {
+		
+	}
+		
+	public Patologia(Dente dente, FaceDente face, Local local, String descricao, Date data,
+			Odontograma odontograma, Atendimento atendimento) {
+		super();
+		this.dente = dente;
+		this.face = face;
+		this.local = local;
+		this.descricao = descricao;
+		this.data = data;
+		this.odontograma = odontograma;
+		this.atendimento = atendimento;
+	}
+
 	public Integer getId() {
 		return id;
 	}

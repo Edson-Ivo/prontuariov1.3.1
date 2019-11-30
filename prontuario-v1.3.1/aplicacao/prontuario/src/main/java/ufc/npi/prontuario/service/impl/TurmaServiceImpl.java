@@ -97,11 +97,7 @@ public class TurmaServiceImpl implements TurmaService {
 
 	@Override
 	public void alterarStatus(Turma turma) {
-		if (turma.getAtivo())
-			turma.setAtivo(false);
-		else
-			turma.setAtivo(true);
-
+		turma.setAtivo(!turma.getAtivo());
 		turmaRepository.save(turma);
 	}
 

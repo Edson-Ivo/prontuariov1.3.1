@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import ufc.npi.prontuario.exception.ProntuarioException;
@@ -29,8 +30,8 @@ import ufc.npi.prontuario.repository.AtendimentoRepository;
 import ufc.npi.prontuario.repository.OdontogramaRepository;
 import ufc.npi.prontuario.repository.PatologiaRepository;
 import ufc.npi.prontuario.repository.ServidorRepository;
-import ufc.npi.prontuario.repository.TipoPatologiaRepository;
 import ufc.npi.prontuario.service.PatologiaService;
+import ufc.npi.prontuario.service.TipoPatologiaService;
 
 @Service
 public class PatologiaServiceImpl implements PatologiaService {
@@ -40,9 +41,9 @@ public class PatologiaServiceImpl implements PatologiaService {
 
 	@Autowired
 	private PatologiaRepository patologiaRepository;
-
+	
 	@Autowired
-	private TipoPatologiaRepository tipoPatologiaRepository;
+	private TipoPatologiaService tipoPatologiaService;
 
 	@Autowired
 	private AtendimentoRepository atendimentoRepository;
@@ -57,72 +58,54 @@ public class PatologiaServiceImpl implements PatologiaService {
 			Integer idOdontograma, String descricao, Aluno aluno) throws ProntuarioException {
 		Odontograma odontograma = odontogramaPatologiaRepository.findOne(idOdontograma);
 
-		// Verificação de restrições
 		List<Atendimento> atendimentos = atendimentoRepository.findAllByResponsavelOrAjudanteExist(aluno,
 				odontograma.getPaciente(), Status.EM_ANDAMENTO);
 
 		if (atendimentos.size() != 1) {
 			throw new ProntuarioException(NENHUM_ATENDIMENTO_ABERTO_EXCEPTION);
 		}
-		// Fim da verificação de restrições
-
-		List<Patologia> patologias = new ArrayList<Patologia>();
-
-		Local local = Local.valueOf(localString);
 
 		FaceDente face = null;
 		Dente dente = null;
-
+		Local local = Local.valueOf(localString);
+		
 		if (local == Local.FACE) {
 			face = FaceDente.valueOf(faceDente.substring(3));
 			dente = Dente.valueOf("D" + faceDente.substring(0, 2));
-
-			patologias = salvarPatologias(idPatologias, face, dente, local, odontograma, descricao, patologias,
-					atendimentos.get(0));
 		}
 
 		else if (local == Local.DENTE) {
-			face = null;
 			dente = Dente.valueOf("D" + faceDente);
-			patologias = salvarPatologias(idPatologias, face, dente, local, odontograma, descricao, patologias,
-					atendimentos.get(0));
 		}
 
-		else if (local == Local.GERAL) {
-			patologias = salvarPatologias(idPatologias, face, dente, local, odontograma, descricao, patologias,
-					atendimentos.get(0));
-		}
-
+		Patologia patologia = new Patologia(dente, face, local, descricao, new Date(), odontograma, atendimentos.get(0));
+		List<Patologia> patologias = setarTiposPatologias(idPatologias, patologia);
+		salvarPatologias(patologias);
+		
 		return patologias;
 	}
 
-	private List<Patologia> salvarPatologias(List<Integer> idPatologias, FaceDente face, Dente dente, Local local,
-			Odontograma odontograma, String descricao, List<Patologia> patologias, Atendimento atendimento) {
-
-		for (Integer p : idPatologias) {
-			TipoPatologia tipo = tipoPatologiaRepository.findOne(p);
-
-			Patologia patologia = new Patologia();
-			patologia.setDente(dente);
-			patologia.setFace(face);
-			patologia.setLocal(local);
+	private List<Patologia> setarTiposPatologias(List<Integer> idPatologias, Patologia patologia) {
+		List<Patologia> patologias = new ArrayList<Patologia>();
+		List<TipoPatologia> tipos = tipoPatologiaService.buscarPorIds(idPatologias);
+		
+		for (TipoPatologia tipo : tipos) {
 			patologia.setTipo(tipo);
-			patologia.setData(new Date());
-			patologia.setOdontograma(odontograma);
-			patologia.setDescricao(descricao);
-			patologia.setAtendimento(atendimento);
-
-			patologiaRepository.save(patologia);
-
 			patologias.add(patologia);
 		}
-
+		
 		return patologias;
+	}
+
+	private void salvarPatologias(List<Patologia> patologias) {
+		
+		for (Patologia patologia : patologias) {			
+			patologiaRepository.save(patologia);
+		}
 	}
 
 	@Override
-	public void tratar(Patologia patologia, Tratamento tratamento) {
-		patologia.setTratamento(tratamento);
+	public void tratar(Patologia patologia) {
 		patologiaRepository.saveAndFlush(patologia);
 	}
 
