@@ -76,6 +76,39 @@ public class TurmaController {
 		return new ModelAndView(REDIRECT_DETALHES_TURMA + turma.getId());
 	}
 
+	@PreAuthorize(PERMISSAO_ADMINISTRACAO)
+	@PostMapping("/{idTurma}/inscrever")
+	public ModelAndView inscreverAluno(@PathVariable("idTurma") Turma turma,
+			@RequestParam("matricula") String matricula, RedirectAttributes attributes) {
+		
+		try {
+			turmaService.inscreverAluno(turma, matricula);
+			attributes.addFlashAttribute(SUCCESS, SUCCESS_MATRICULAR_ALUNO);
+		} catch (ProntuarioException e) {
+			attributes.addFlashAttribute(ERROR, e.getMessage());
+		}
+		
+		return new ModelAndView(REDIRECT_DETALHES_TURMA + turma.getId());
+	}
+
+	@PreAuthorize(PERMISSAO_ADMINISTRACAO)
+	@PostMapping("/{idTurma}/adicionar-professor")
+	public ModelAndView adicionarProfessor(@PathVariable("idTurma") Turma turma, 
+			@ModelAttribute("novosProfessores") Turma novosProfessores, RedirectAttributes attributes){
+		List<Servidor> professores = novosProfessores.getProfessores();
+		
+		if(listIsNotNullOrEmpty(professores)){
+			turmaService.adicionarProfessorTurma(turma, professores);
+			attributes.addFlashAttribute(SUCCESS, SUCCESS_VINCULAR_PROFESSOR);
+		}
+		
+		return new ModelAndView(REDIRECT_DETALHES_TURMA + turma.getId());
+	}
+	
+	private boolean listIsNotNullOrEmpty(List<?> list) {
+		return list != null && !(list.isEmpty());
+	}
+	
 	@PostAuthorize(PERMISSOES_ADMINISTRACAO_VERIFICACAO_PROFESSOR)
 	@GetMapping("/{idTurma}")
 	public ModelAndView visualizarDetalhes(@PathVariable("idTurma") Turma turma) {
