@@ -37,14 +37,22 @@ public class AvaliacaoServiceImpl implements AvaliacaoService {
 	}
 	
 	@Override
-	public Avaliacao addItem(Avaliacao avaliacao, ItemAvaliacao item) throws ProntuarioException {
-		if (!item.getNome().isEmpty() && item.getNome() != null && item.getPeso() != null) {
+	public Avaliacao addItem(Avaliacao avaliacao, ItemAvaliacao item) throws ProntuarioException {	
+		if (itemAvaliacaoIsValid(item)) {
 			item.setNome(item.getNome().toUpperCase());
 			avaliacao.addItem(item);
+			
 			return avaliacaoRepository.saveAndFlush(avaliacao);
 		} else {
 			throw new ProntuarioException(ERRO_AVALIACAO_CAMPOS);
 		}
+	}
+	
+	private boolean itemAvaliacaoIsValid(ItemAvaliacao itemAvaliacao) {
+		String nome = itemAvaliacao.getNome();
+		Integer peso = itemAvaliacao.getPeso();
+		
+		return !(nome.isEmpty()) || nome != null || peso != null; 
 	}
 	
 	@Override
