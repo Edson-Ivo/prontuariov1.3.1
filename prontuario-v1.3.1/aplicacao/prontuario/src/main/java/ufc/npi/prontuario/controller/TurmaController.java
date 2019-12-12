@@ -5,6 +5,8 @@ import static ufc.npi.prontuario.util.ConfigurationConstants.PERMISSOES_ADMINIST
 import static ufc.npi.prontuario.util.ConfigurationConstants.PERMISSOES_PROFESSOR_ADMINISTRACAO;
 import static ufc.npi.prontuario.util.ExceptionSuccessConstants.ERROR;
 import static ufc.npi.prontuario.util.ExceptionSuccessConstants.SUCCESS;
+import static ufc.npi.prontuario.util.ExceptionSuccessConstants.SUCCESS_MATRICULAR_ALUNO;
+import static ufc.npi.prontuario.util.ExceptionSuccessConstants.SUCCESS_VINCULAR_PROFESSOR;
 import static ufc.npi.prontuario.util.ExceptionSuccessConstants.SUCCESS_ALTERAR_STATUS;
 import static ufc.npi.prontuario.util.ExceptionSuccessConstants.SUCCESS_CADASTRAR_TURMA;
 import static ufc.npi.prontuario.util.ExceptionSuccessConstants.SUCCESS_EXCLUIR_TURMA;
@@ -29,6 +31,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
