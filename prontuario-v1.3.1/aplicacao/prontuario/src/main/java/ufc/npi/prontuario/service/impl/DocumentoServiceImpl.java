@@ -111,15 +111,20 @@ public class DocumentoServiceImpl implements DocumentoService{
 
 	@Override
 	public DocumentoDownload downloadDocumento(Documento documento, String procedimento) {
+		String extensao = getExtensaoDocumento(documento);
 		
-		String extensao;
-		
+		return new DocumentoDownload(documento.getArquivo(), documento.getNome(), procedimento, extensao);
+	}
+
+	private String getExtensaoDocumento(Documento documento) {
+		String extensao = "";
+
 		if(documento.getTipo().equals(TipoDocumento.PDF)) {
 			extensao = "application/" + documento.getTipo().getDescricao();
 		} else {
 			extensao = "image/" + documento.getTipo().getDescricao();
 		}
-		
-		return new DocumentoDownload(documento.getArquivo(), documento.getNome(), procedimento, extensao);
+
+		return extensao;
 	}
 }
