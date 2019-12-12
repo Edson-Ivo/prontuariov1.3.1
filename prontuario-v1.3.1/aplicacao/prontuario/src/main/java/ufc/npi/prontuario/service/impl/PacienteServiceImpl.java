@@ -24,26 +24,38 @@ public class PacienteServiceImpl implements PacienteService {
     @Override
     public void salvar(Paciente paciente) throws ProntuarioException {
         if (paciente.getId() == null) {
-            paciente.setOdontograma(new Odontograma());
+            criarOdontogramaEmPaciente(paciente);
         }
 
         if (!paciente.getCpf().isEmpty()) {
-            Paciente pacienteExistente = buscarByCpf(paciente.getCpf());
-
-            if (pacienteExistente != null && !pacienteExistente.equals(paciente)) {
-                throw new ProntuarioException(ERRO_PACIENTE_CPF_EXISTENTE);
-            }
+            verificarSePacienteTemCPF(paciente);
         }
 
         if (!paciente.getCns().isEmpty()) {
-            Paciente pacienteExistente = buscarByCns(paciente.getCns());
-
-            if (pacienteExistente != null && !pacienteExistente.equals(paciente)) {
-                throw new ProntuarioException(ERRO_PACIENTE_CNS_EXISTENTE);
-            }
+            verificarSePacienteTemCNS(paciente);
         }
 
         pacienteRepository.save(paciente);
+    }
+
+    private void criarOdontogramaEmPaciente(Paciente paciente) {
+        paciente.setOdontograma(new Odontograma());
+    }
+
+    private void verificarSePacienteTemCPF(Paciente paciente) throws ProntuarioException {
+        Paciente pacienteExistente = buscarByCpf(paciente.getCpf());
+
+        if (pacienteExistente != null && !pacienteExistente.equals(paciente)) {
+            throw new ProntuarioException(ERRO_PACIENTE_CPF_EXISTENTE);
+        }
+    }
+
+    private void verificarSePacienteTemCNS(Paciente paciente) throws ProntuarioException {
+        Paciente pacienteExistente = buscarByCns(paciente.getCns());
+
+        if (pacienteExistente != null && !pacienteExistente.equals(paciente)) {
+            throw new ProntuarioException(ERRO_PACIENTE_CNS_EXISTENTE);
+        }
     }
 
     @Override
