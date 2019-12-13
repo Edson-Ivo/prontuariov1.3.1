@@ -8,7 +8,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import ufc.npi.prontuario.exception.ProntuarioException;
@@ -23,7 +22,6 @@ import ufc.npi.prontuario.model.Papel;
 import ufc.npi.prontuario.model.Patologia;
 import ufc.npi.prontuario.model.Servidor;
 import ufc.npi.prontuario.model.TipoPatologia;
-import ufc.npi.prontuario.model.Tratamento;
 import ufc.npi.prontuario.model.Usuario;
 import ufc.npi.prontuario.repository.AlunoRepository;
 import ufc.npi.prontuario.repository.AtendimentoRepository;

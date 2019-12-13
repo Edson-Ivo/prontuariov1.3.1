@@ -109,12 +109,7 @@ public class OdontogramaController {
 	@GetMapping("/tableProcedimentos/{id}")
 	public ModelAndView tableProcedimentos(@PathVariable("id") Odontograma odontograma, Authentication auth) {
 		ModelAndView mv = new ModelAndView(TABLE_PROCEDIMENTOS);
-		Usuario usuario = (Usuario) auth.getPrincipal();
-		List<Procedimento> procedimentos = procedimentoService.buscarProcedimentosOdontograma(odontograma,
-				usuario.getId());
-		procedimentos
-				.addAll(procedimentoService.buscarProcedimentosExistentesOdontograma(odontograma, usuario.getId()));
-		procedimentos.sort((p1, p2) -> p1.getAtendimento().getData().compareTo(p1.getAtendimento().getData()));
+		List<Procedimento> procedimentos = procedimentoService.tabelaProcedimentosOdontograma(odontograma, auth);
 		mv.addObject("procedimentos", procedimentos);
 		return mv;
 	}
