@@ -52,6 +52,9 @@ public class Turma {
 	@OneToMany(mappedBy = "turma", cascade = CascadeType.MERGE)
 	private List<Atendimento> atendimentos;
 
+	public Turma() {		
+	}
+	
 	public Turma(String nome, int ano, int semestre, Disciplina disciplina, List<Servidor> professores) {
 		this.nome = nome;
 		this.ano = ano;
