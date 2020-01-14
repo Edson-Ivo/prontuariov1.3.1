@@ -4,8 +4,8 @@ import static ufc.npi.prontuario.util.ConfigurationConstants.PERMISSAO_ADMINISTR
 import static ufc.npi.prontuario.util.ConfigurationConstants.PERMISSOES_PROFESSOR_ADMINISTRACAO_VERIFICACAO_ESTUDANTE;
 import static ufc.npi.prontuario.util.ExceptionSuccessConstants.ERROR;
 import static ufc.npi.prontuario.util.ExceptionSuccessConstants.SUCCESS;
-import static ufc.npi.prontuario.util.ExceptionSuccessConstants.SUCCESS_CADASTRAR_ALUNO;
 import static ufc.npi.prontuario.util.ExceptionSuccessConstants.SUCCESS_ATUALIZAR_ALUNO;
+import static ufc.npi.prontuario.util.ExceptionSuccessConstants.SUCCESS_CADASTRAR_ALUNO;
 import static ufc.npi.prontuario.util.ExceptionSuccessConstants.SUCCESS_EXCLUIR_ALUNO;
 import static ufc.npi.prontuario.util.PagesConstants.FORMULARIO_ADICIONAR_ALUNO;
 import static ufc.npi.prontuario.util.PagesConstants.PAGINA_DETALHES_ALUNO;
@@ -50,22 +50,27 @@ public class AlunoController {
 	@PostMapping(value = "/adicionar")
 	public ModelAndView adicionarAluno(Aluno aluno, RedirectAttributes attributes) {
 		ModelAndView modelAndView = new ModelAndView(REDIRECT_LISTAGEM_ALUNOS);
+
 		try {
-			if(aluno.getId() == null) {
-				alunoService.salvar(aluno);
-				attributes.addFlashAttribute(SUCCESS, SUCCESS_CADASTRAR_ALUNO);
-			} else {
-				alunoService.atualizar(aluno);
-				attributes.addFlashAttribute(SUCCESS, SUCCESS_ATUALIZAR_ALUNO);
-			}
+			salvarOuAtualizarAluno(aluno, attributes);
 		} catch (ProntuarioException e) {
 			modelAndView.setViewName(FORMULARIO_ADICIONAR_ALUNO);
 			modelAndView.addObject(ERROR, e.getMessage());
 		}
-		
+
 		return modelAndView;
 	}
-	
+
+	private void salvarOuAtualizarAluno(Aluno aluno, RedirectAttributes attributes) throws ProntuarioException {
+		if (aluno.getId() == null) {
+			alunoService.salvar(aluno);
+			attributes.addFlashAttribute(SUCCESS, SUCCESS_CADASTRAR_ALUNO);
+		} else {
+			alunoService.atualizar(aluno);
+			attributes.addFlashAttribute(SUCCESS, SUCCESS_ATUALIZAR_ALUNO);
+		}
+	}
+
 	@PreAuthorize(PERMISSAO_ADMINISTRACAO)
 	@GetMapping(value = "/remover/{idAluno}")
 	public ModelAndView excluirAluno(@PathVariable("idAluno") Aluno aluno, RedirectAttributes attributes) {
@@ -75,13 +80,13 @@ public class AlunoController {
 		} catch (ProntuarioException e) {
 			attributes.addFlashAttribute(ERROR, e.getMessage());
 		}
-		
+
 		return new ModelAndView(REDIRECT_LISTAGEM_ALUNOS);
 	}
-	
+
 	@PreAuthorize(PERMISSAO_ADMINISTRACAO)
 	@GetMapping("/editar/{idAluno}")
-	public ModelAndView editarAluno(@PathVariable("idAluno") Aluno aluno){
+	public ModelAndView editarAluno(@PathVariable("idAluno") Aluno aluno) {
 		return formularioAdicionarAluno(aluno);
 	}
 
