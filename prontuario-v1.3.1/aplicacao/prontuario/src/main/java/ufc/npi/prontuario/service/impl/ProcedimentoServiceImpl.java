@@ -193,42 +193,10 @@ public class ProcedimentoServiceImpl implements ProcedimentoService {
 	@Override
 	public List<Procedimento> buscarProcedimentosExistentesOdontograma(Odontograma odontograma,
 			Integer idUsuarioLogado) {
-		Usuario usuario = usuarioRepository.findOne(idUsuarioLogado);
-
-		List<Procedimento> procedimentos = new ArrayList<>();
-
-		// Adicionando os procedimentos em que o usuário logado é o responsável,
-		// ajudante ou professor
-		if (usuario instanceof Aluno) {
-			procedimentos = procedimentoRepository
-					.findAllByOdontogramaAndAtendimentoResponsavelAndPreExistenteIsTrueOrOdontogramaAndAtendimentoAjudanteAndPreExistenteIsTrue(
-							odontograma, (Aluno) usuario, odontograma, (Aluno) usuario);
-		} else if (usuario instanceof Servidor) {
-			procedimentos = procedimentoRepository
-					.findAllByOdontogramaAndAtendimentoProfessorAndPreExistenteIsTrue(odontograma, (Servidor) usuario);
-		}
-
-		// Se o usuário logado não fez parte do atendimento a lista está vazia,
-		// e são carregadas apenas os procedimentos validados
-		if (procedimentos.isEmpty()) {
-			procedimentos = procedimentoRepository
-					.findAllByOdontogramaAndAtendimentoStatusAndPreExistenteIsTrue(odontograma, Status.VALIDADO);
-
-			// Se o usuário logado faz parte do atendimento então a lista não
-			// está vazia e são adicionadas os procedimentos adicionados
-			// por outras pessoas que estão validados
-		} else {
-
-			List<Integer> idProcedimentos = new ArrayList<>();
-			for (Procedimento procedimento : procedimentos) {
-				idProcedimentos.add(procedimento.getId());
-			}
-
-			procedimentos.addAll(
-					procedimentoRepository.findAllByOdontogramaAndIdIsNotInAndAtendimentoStatusAndPreExistenteIsTrue(
-							odontograma, idProcedimentos, Status.VALIDADO));
-		}
-
+		
+		List<Procedimento> procedimentos = findProcedimentosExistenteByUsuario(odontograma, idUsuarioLogado);
+		findProcedimentosByAtendimento(odontograma, procedimentos.isEmpty());
+		
 		procedimentos.sort((p1, p2) -> p1.getAtendimento().getData().compareTo(p1.getAtendimento().getData()));
 		return procedimentos;
 	}
@@ -248,5 +216,47 @@ public class ProcedimentoServiceImpl implements ProcedimentoService {
 		procedimentos.sort((p1, p2) -> p1.getAtendimento().getData().compareTo(p1.getAtendimento().getData()));
 		return procedimentos;
 	}
-
+	
+	private List<Procedimento> findProcedimentosExistenteByUsuario(Odontograma odontograma,	Integer idUsuarioLogado){
+		List<Procedimento> procedimentos = findProcedimentosExistenteByAluno(odontograma, idUsuarioLogado);
+		if (procedimentos.isEmpty()) {
+			procedimentos = findProcedimentosExistenteByServidor(odontograma, idUsuarioLogado);
+		}
+		return procedimentos;
+	}
+	
+	private List<Procedimento> findProcedimentosExistenteByAluno(Odontograma odontograma, Integer idUsuarioLogado){
+		Aluno aluno = alunoRepository.findOne(idUsuarioLogado);
+		return procedimentoRepository
+				.findAllByOdontogramaAndAtendimentoResponsavelAndPreExistenteIsTrueOrOdontogramaAndAtendimentoAjudanteAndPreExistenteIsTrue(
+						odontograma, aluno, odontograma, aluno);
+	}
+	
+	private List<Procedimento> findProcedimentosExistenteByServidor(Odontograma odontograma, Integer idUsuarioLogado){
+		Servidor servidor = servidorRepository.findOne(idUsuarioLogado);
+		return procedimentoRepository
+				.findAllByOdontogramaAndAtendimentoProfessorAndPreExistenteIsTrue(odontograma, servidor);
+	}
+	
+	private List<Procedimento> findProcedimentosByAtendimento(Odontograma odontograma, List<Procedimento> procedimentos){
+		
+		if(procedimentos.isEmpty()) {
+			return procedimentos = procedimentoRepository
+					.findAllByOdontogramaAndAtendimentoStatusAndPreExistenteIsTrue(odontograma, Status.VALIDADO);
+		}
+		
+		return findProcedimentosValidados(odontograma, procedimentos);
+	}
+	
+	private List<Procedimento> findProcedimentosValidados(Odontograma odontograma, List<Procedimento> procedimentos){
+		
+		List<Integer> idProcedimentos = new ArrayList<>();
+		for (Procedimento procedimento : procedimentos) {
+			idProcedimentos.add(procedimento.getId());
+		}
+		
+		return procedimentoRepository.findAllByOdontogramaAndIdIsNotInAndAtendimentoStatusAndPreExistenteIsTrue(
+						odontograma, idProcedimentos, Status.VALIDADO);
+	}
+	
 }
