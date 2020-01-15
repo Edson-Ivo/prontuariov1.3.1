@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import ufc.npi.prontuario.model.Servidor;
 import ufc.npi.prontuario.model.Turma;
 import ufc.npi.prontuario.model.Usuario;
 import ufc.npi.prontuario.service.TurmaService;
@@ -37,11 +36,11 @@ public class TurmaProfessorController {
 	@PostMapping("/{idTurma}/adicionar-professor")
 	public ModelAndView adicionarProfessor(@PathVariable("idTurma") Turma turma, 
 			@ModelAttribute("novosProfessores") Turma novosProfessores, RedirectAttributes attributes){
-		List<Servidor> professores = novosProfessores.getProfessores();
-		
-		if(listIsNotNullOrEmpty(professores)){
-			turmaService.adicionarProfessorTurma(turma, professores);
-			attributes.addFlashAttribute(SUCCESS, SUCCESS_VINCULAR_PROFESSOR);
+	
+		turmaService.adicionarProfessorTurma(turma, novosProfessores.getProfessores());
+	
+		if(existProfessoresTurma(turma)){
+			addMensagemSucesso(attributes, SUCCESS_VINCULAR_PROFESSOR);
 		}
 		
 		return new ModelAndView(REDIRECT_DETALHES_TURMA + turma.getId());
@@ -59,8 +58,12 @@ public class TurmaProfessorController {
 		modelAndView.addObject("novosProfessores", new Turma());
 		return modelAndView;
 	}
+		
+	private void addMensagemSucesso(RedirectAttributes attributes, String mensagem) {
+		attributes.addFlashAttribute(SUCCESS, mensagem);
+	}
 	
-	private boolean listIsNotNullOrEmpty(List<?> list) {
-		return list != null && !(list.isEmpty());
+	private boolean existProfessoresTurma(Turma turma) {
+		return turma.getProfessores().isEmpty();
 	}
 }
