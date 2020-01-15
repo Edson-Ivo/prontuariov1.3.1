@@ -4,7 +4,6 @@ import static ufc.npi.prontuario.util.ConfigurationConstants.PERMISSAO_ADMINISTR
 import static ufc.npi.prontuario.util.ExceptionSuccessConstants.ERROR;
 import static ufc.npi.prontuario.util.ExceptionSuccessConstants.SUCCESS;
 import static ufc.npi.prontuario.util.ExceptionSuccessConstants.SUCCESS_DESVINCULAR_PROFESSOR;
-import static ufc.npi.prontuario.util.ExceptionSuccessConstants.SUCCESS_VINCULAR_PROFESSOR;
 import static ufc.npi.prontuario.util.FragmentsConstants.FRAGMENT_PROFESSORES;
 import static ufc.npi.prontuario.util.PagesConstants.FORMULARIO_ADICIONAR_TURMA;
 import static ufc.npi.prontuario.util.RedirectConstants.REDIRECT_DETALHES_TURMA;
@@ -13,9 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
@@ -48,19 +45,6 @@ public class ProfessorTurmaController {
 		modelAndView.addObject("professores", servidorService.buscarProfessores());
 		modelAndView.addObject("disciplinas", disciplinaService.buscarTudo());
 		return modelAndView;
-	}
-	
-	@PreAuthorize(PERMISSAO_ADMINISTRACAO)
-	@PostMapping("/{idTurma}/adicionar-professor")
-	public ModelAndView adicionarProfessor(@PathVariable("idTurma") Turma turma, 
-			@ModelAttribute("novosProfessores") Turma novosProfessores, RedirectAttributes attributes){
-		
-		if(novosProfessores.getProfessores() != null && !novosProfessores.getProfessores().isEmpty()){
-			turmaService.adicionarProfessorTurma(turma, novosProfessores.getProfessores());
-			attributes.addFlashAttribute(SUCCESS, SUCCESS_VINCULAR_PROFESSOR);
-		}
-		
-		return new ModelAndView(REDIRECT_DETALHES_TURMA + turma.getId());
 	}
 	
 	@GetMapping("/professores/")

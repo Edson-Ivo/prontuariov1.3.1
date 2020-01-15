@@ -40,6 +40,7 @@ public class TurmaServiceTest extends AbstractServiceTest{
 		professores = new ArrayList<Servidor>();
 		professores.add(servidorService.buscarPorId(101));
 		disciplina = new Disciplina();
+		disciplina.setId(1);
 	}
 	
 	@Test
@@ -59,15 +60,14 @@ public class TurmaServiceTest extends AbstractServiceTest{
 	
 	@Test
 	public void testSalvar(){
-		disciplina.setId(1);
 		
 		Turma turma = new Turma("TURMA A", 2016, 2, disciplina, professores);
 		salvar(turma);
-		assertEquals(turma, turmaService.buscarPorId(4));
+		turmaIsEquals(turma, 4);
 		
 		turma.setNome("TURMA B");
 		salvar(turma);
-		assertEquals("TURMA B", turmaService.buscarPorId(4).getNome());
+		turmaIsEquals(turma, 4);
 	}
 	
 	@Test
@@ -179,5 +179,9 @@ public class TurmaServiceTest extends AbstractServiceTest{
 			fail("Turma não salva.");
 		}
 		
+	}
+	
+	private void turmaIsEquals(Turma turma, Integer id) {
+		assertEquals(turma, turmaService.buscarPorId(id));
 	}
 }
