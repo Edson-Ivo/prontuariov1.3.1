@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import ufc.npi.prontuario.exception.ProntuarioException;
@@ -237,6 +238,15 @@ public class ProcedimentoServiceImpl implements ProcedimentoService {
 		procedimento.getOdontograma().getProcedimentos().remove(procedimento);
 		procedimento.getAtendimento().getProcedimentos().remove(procedimento);
 		procedimentoRepository.delete(procedimento);
+	}
+
+	@Override
+	public List<Procedimento> tabelaProcedimentosOdontograma(Odontograma odontograma, Authentication auth) {
+		Usuario usuario = (Usuario) auth.getPrincipal();
+		List<Procedimento> procedimentos = buscarProcedimentosOdontograma(odontograma, usuario.getId());
+		procedimentos.addAll(buscarProcedimentosExistentesOdontograma(odontograma, usuario.getId()));
+		procedimentos.sort((p1, p2) -> p1.getAtendimento().getData().compareTo(p1.getAtendimento().getData()));
+		return procedimentos;
 	}
 
 }

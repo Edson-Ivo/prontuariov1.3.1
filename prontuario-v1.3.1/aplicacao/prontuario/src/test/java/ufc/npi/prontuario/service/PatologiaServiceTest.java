@@ -68,7 +68,7 @@ public class PatologiaServiceTest extends AbstractServiceTest{
 		odontograma.setId(1);
 		Aluno aluno = new Aluno();
 		aluno.setId(1);
-		Patologia patologia = patologiaService.buscarPatologiasOdontograma(odontograma, aluno).get(1);
+		//Patologia patologia = patologiaService.buscarPatologiasOdontograma(odontograma, aluno).get(1);
 		Tratamento tratamento = new Tratamento();
 		tratamento.setId(1);
 		
