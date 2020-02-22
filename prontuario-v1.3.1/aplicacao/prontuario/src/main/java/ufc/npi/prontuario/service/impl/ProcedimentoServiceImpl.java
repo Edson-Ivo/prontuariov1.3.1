@@ -58,43 +58,63 @@ public class ProcedimentoServiceImpl implements ProcedimentoService {
 	@Autowired
 	private PatologiaRepository patologiaRepository;
 
+
+
 	public List<Procedimento> salvar(String faceDente, List<Integer> idProcedimentos, String localString,
 			Integer idOdontograma, String descricao, Aluno aluno, Boolean preExistente, List<Integer> patologias,
 			Date data) throws ProntuarioException {
 		Odontograma odontograma = odontogramaPatologiaRepository.findOne(idOdontograma);
 
 		// Verificação de restrições
-		List<Atendimento> atendimentos = atendimentoRepository.findAllByResponsavelOrAjudanteExist(aluno,
-				odontograma.getPaciente(), Status.EM_ANDAMENTO);
+		List<Atendimento> atendimentos = buscarAtendimentos(aluno, odontograma);
 
-		if (atendimentos.size() != 1) {
-			throw new ProntuarioException(NENHUM_ATENDIMENTO_ABERTO_EXCEPTION);
-		}
+		verificarSeAtendimentoEstaAberto(atendimentos);
 		// Fim da verificação de restrições
 
-		Local local = Local.valueOf(localString);
-
 		List<Procedimento> procedimentos = new ArrayList<>();
-		
-		FaceDente face = null;
-		Dente dente = null;
-		
-		if (local == Local.FACE) {
-			face = FaceDente.valueOf(faceDente.substring(3));
-			dente = Dente.valueOf("D" + faceDente.substring(0, 2));
-			
-		} else if (local == Local.DENTE) {
-			face = null;
-			dente = Dente.valueOf("D" + faceDente);
-		}
-		
-		
 		List<TipoProcedimento> tipoProcedimentos = getListTipoProcedimento(idProcedimentos);
-		Procedimento procedimento = new Procedimento(dente, face, local, null, 
-								descricao, atendimentos.get(0), odontograma, preExistente);
+
+		Procedimento procedimento = configurarProcedimentos(localString, faceDente, descricao, preExistente, atendimentos, odontograma);
 		
 		procedimentos = salvarProcedimentos(tipoProcedimentos, procedimento);
 		
+		salvarPatologias(patologias, data, descricao, aluno);
+
+		return procedimentos;
+	}
+
+	private List<Atendimento> buscarAtendimentos(Aluno aluno, Odontograma odontograma) {
+		return atendimentoRepository.findAllByResponsavelOrAjudanteExist(aluno,
+				odontograma.getPaciente(), Status.EM_ANDAMENTO);
+	}
+
+	private void verificarSeAtendimentoEstaAberto(List<Atendimento> atendimentos) throws ProntuarioException  {
+		if (atendimentos.size() != 1) {
+			throw new ProntuarioException(NENHUM_ATENDIMENTO_ABERTO_EXCEPTION);
+		}
+	}
+
+	private Procedimento configurarProcedimentos(String localString, String faceDente, String descricao, Boolean preExistente,
+												 List<Atendimento> atendimentos, Odontograma odontograma) {
+		Local local = Local.valueOf(localString);
+
+		FaceDente face = null;
+		Dente dente = null;
+
+		if (local == Local.FACE) {
+			face = FaceDente.valueOf(faceDente.substring(3));
+			dente = Dente.valueOf("D" + faceDente.substring(0, 2));
+
+		} else if (local == Local.DENTE) {
+			dente = Dente.valueOf("D" + faceDente);
+		}
+
+		return new Procedimento(dente, face, local, null,
+				descricao, atendimentos.get(0), odontograma, preExistente);
+	}
+
+	private void salvarPatologias(List<Integer> patologias, Date data, String descricao, Aluno aluno) {
+
 		if (patologias != null && !patologias.isEmpty()) {
 
 			Tratamento tratamento = new Tratamento();
@@ -109,8 +129,6 @@ public class ProcedimentoServiceImpl implements ProcedimentoService {
 				patologiaRepository.saveAndFlush(patologia);
 			}
 		}
-
-		return procedimentos;
 	}
 
 	private List<Procedimento> salvarProcedimentos(List<TipoProcedimento> tipoProcedimentos, Procedimento procedimento) {
