@@ -24,63 +24,71 @@ import ufc.npi.prontuario.repository.PacienteRepository;
 import ufc.npi.prontuario.service.DocumentoService;
 
 @Service
-public class DocumentoServiceImpl implements DocumentoService{
-	
+public class DocumentoServiceImpl implements DocumentoService {
+
 	@Value("${documents.folder}")
 	private String DOCUMENTOS_PRONTUARIO;
-	
+
 	@Autowired
 	DocumentoRepository documentoRepository;
-	
+
 	@Autowired
 	private PacienteRepository pacienteRepository;
 
 	@Override
 	public void salvar(Paciente paciente, MultipartFile[] files) throws ProntuarioException {
-		for(MultipartFile file : files) {
-			if(file != null && !(file.getOriginalFilename().toString().equals(""))) {
+		for (MultipartFile file : files) {
+			if (file != null && !(file.getOriginalFilename().toString().equals(""))) {
 				Documento documento = new Documento();
 				try {
 					documento.setNome(file.getOriginalFilename());
 					documento.setArquivo(file.getBytes());
 					documento.setCaminho(DOCUMENTOS_PRONTUARIO + paciente.getId() + "/" + documento.getNome());
-					
-					//pega  o fomato do arquivo
+
+					// pega o fomato do arquivo
 					int i = documento.getNome().lastIndexOf('.');
-					String extensao = documento.getNome().substring(i+1);
+					String extensao = documento.getNome().substring(i + 1);
 					documento.setTipo(TipoDocumento.valueOf(extensao.toUpperCase()));
-					
-					for(Documento doc : paciente.getDocumentos()) {
-						if(documento.getCaminho().equals(doc.getCaminho())) {
+
+					for (Documento doc : paciente.getDocumentos()) {
+						if (documento.getCaminho().equals(doc.getCaminho())) {
 							throw new ProntuarioException(ERRO_ARQUIVO_EXISTENTE);
 						}
 					}
-					
+
 					paciente.addDocumento(documento);
 					pacienteRepository.save(paciente);
 				} catch (IOException e) {
 					throw new ProntuarioException(ERRO_SALVAR_ARQUIVO);
 				}
-				salvarArquivoLocal(documento, paciente);
+				salvarArquivoLocal(documento, paciente.getId());
 			}
 		}
 	}
-	
-	private void salvarArquivoLocal(Documento documento, Paciente paciente) throws ProntuarioException {
-		String caminhoDiretorio = DOCUMENTOS_PRONTUARIO + paciente.getId();
-		File diretorio = new File(caminhoDiretorio);
-		diretorio.mkdirs();
-		
-		try{
-			File arquivo = new File(diretorio, documento.getNome());
-			FileOutputStream fop = new FileOutputStream(arquivo);
-			arquivo.createNewFile();
-			fop.write(documento.getArquivo());
-			fop.flush();
-			fop.close();
+
+	private void salvarArquivoLocal(Documento documento, Integer idPaciente) throws ProntuarioException {
+		String caminhoDiretorio = DOCUMENTOS_PRONTUARIO + idPaciente;
+
+		try {
+			File arquivo = criarArquivo(caminhoDiretorio, documento.getNome());
+
+			FileOutputStream fileOutputStream = new FileOutputStream(arquivo);
+			fileOutputStream.write(documento.getArquivo());
+			fileOutputStream.flush();
+			fileOutputStream.close();
 		} catch (IOException e) {
 			throw new ProntuarioException(ERRO_SALVAR_ARQUIVO);
 		}
+	}
+
+	private File criarArquivo(String caminhoDiretorio, String nomeArquivo) throws IOException {
+		File diretorio = new File(caminhoDiretorio);
+		diretorio.mkdirs();
+
+		File arquivo = new File(diretorio, nomeArquivo);
+		arquivo.createNewFile();
+
+		return arquivo;
 	}
 
 	public Documento buscarArquivo(Documento documento) throws ProntuarioException {
@@ -95,7 +103,7 @@ public class DocumentoServiceImpl implements DocumentoService{
 		} catch (IOException e) {
 			throw new ProntuarioException(ERRO_CARREGAR_ARQUIVO);
 		}
-		
+
 		documento.setArquivo(bFile);
 		return documento;
 	}
@@ -103,7 +111,7 @@ public class DocumentoServiceImpl implements DocumentoService{
 	public void deletar(Documento documento, Paciente paciente) {
 		File file = new File(documento.getCaminho());
 		file.delete();
-		
+
 		paciente.removerDocumento(documento);
 		pacienteRepository.save(paciente);
 		documentoRepository.delete(documento);
@@ -111,15 +119,20 @@ public class DocumentoServiceImpl implements DocumentoService{
 
 	@Override
 	public DocumentoDownload downloadDocumento(Documento documento, String procedimento) {
+		String extensao = getExtensaoDocumento(documento);
 		
-		String extensao;
-		
+		return new DocumentoDownload(documento.getArquivo(), documento.getNome(), procedimento, extensao);
+	}
+
+	private String getExtensaoDocumento(Documento documento) {
+		String extensao = "";
+
 		if(documento.getTipo().equals(TipoDocumento.PDF)) {
 			extensao = "application/" + documento.getTipo().getDescricao();
 		} else {
 			extensao = "image/" + documento.getTipo().getDescricao();
 		}
-		
-		return new DocumentoDownload(documento.getArquivo(), documento.getNome(), procedimento, extensao);
+
+		return extensao;
 	}
 }

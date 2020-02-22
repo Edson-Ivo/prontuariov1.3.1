@@ -79,7 +79,15 @@ public class Paciente extends PacienteDocumento {
     @OneToMany(mappedBy = "paciente")
     private List<PlanoTratamento> tratamentos;
 
-    public Integer getId() {
+    public List<PlanoTratamento> getTratamentos() {
+		return tratamentos;
+	}
+
+	public void setTratamentos(List<PlanoTratamento> tratamentos) {
+		this.tratamentos = tratamentos;
+	}
+
+	public Integer getId() {
         return id;
     }
 

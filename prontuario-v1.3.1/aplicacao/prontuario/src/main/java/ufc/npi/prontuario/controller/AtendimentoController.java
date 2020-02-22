@@ -60,17 +60,17 @@ public class AtendimentoController {
 	@Autowired
 	private AtendimentoService atendimentoService;
 
-	@Autowired
-	private AlunoService alunoService;
+//	@Autowired
+//	private AlunoService alunoService;
+//
+//	@Autowired
+//	private TurmaService turmaService;
 
-	@Autowired
-	private TurmaService turmaService;
+//	@Autowired
+//	private PatologiaService patologiaService;
 
-	@Autowired
-	private PatologiaService patologiaService;
-
-	@Autowired
-	private ProcedimentoService procedimentoService;
+//	@Autowired
+//	private ProcedimentoService procedimentoService;
 
 	@PreAuthorize(PERMISSOES_ESTUDANTE_PROFESSOR_ADMINISTRACAO)
 	@GetMapping("/{idAtendimento}")
@@ -89,17 +89,17 @@ public class AtendimentoController {
 		return modelAndView;
 	}
 	
-	@PreAuthorize(PERMISSAO_ESTUDANTE)
-	@GetMapping("/{id}/cadastrar")
-	public ModelAndView formularioCadastrarAtendimento(@PathVariable("id") Paciente paciente, Authentication auth) {
-		ModelAndView modelAndView = new ModelAndView(FORMULARIO_ADICIONAR_ATENDIMENTO);
-		Aluno aluno = (Aluno) auth.getPrincipal();
-		modelAndView.addObject("atendimento", new Atendimento());
-		modelAndView.addObject("turmas", turmaService.buscarAtivasPorAluno(aluno));
-		modelAndView.addObject("paciente", paciente);
-		modelAndView.addObject("action", "cadastrar");
-		return modelAndView;
-	}
+//	@PreAuthorize(PERMISSAO_ESTUDANTE)
+//	@GetMapping("/{id}/cadastrar")
+//	public ModelAndView formularioCadastrarAtendimento(@PathVariable("id") Paciente paciente, Authentication auth) {
+//		ModelAndView modelAndView = new ModelAndView(FORMULARIO_ADICIONAR_ATENDIMENTO);
+//		Aluno aluno = (Aluno) auth.getPrincipal();
+//		modelAndView.addObject("atendimento", new Atendimento());
+//		modelAndView.addObject("turmas", turmaService.buscarAtivasPorAluno(aluno));
+//		modelAndView.addObject("paciente", paciente);
+//		modelAndView.addObject("action", "cadastrar");
+//		return modelAndView;
+//	}
 	
 	@PreAuthorize(PERMISSAO_ESTUDANTE)
 	@PostMapping("/cadastrar")
@@ -116,22 +116,22 @@ public class AtendimentoController {
 		return modelAndView;
 	}
 	
-	@PreAuthorize(PERMISSAO_ESTUDANTE)
-	@GetMapping("/editar/{idAtendimento}")
-	public ModelAndView formularioEditarAtendimento(@PathVariable("idAtendimento") Atendimento atendimento,
-			Authentication auth) {
-		ModelAndView modelAndView = new ModelAndView(FORMULARIO_ADICIONAR_ATENDIMENTO);
-		Aluno aluno = (Aluno) auth.getPrincipal();
-		modelAndView.addObject("atendimento", atendimento);
-		modelAndView.addObject("turmas", turmaService.buscarAtivasPorAluno(aluno));
-		modelAndView.addObject("paciente", atendimento.getPaciente());
-		modelAndView.addObject("professor", atendimento.getProfessor());
-		modelAndView.addObject("professores", atendimento.getTurma().getProfessores());
-		modelAndView.addObject("auxiliar", atendimento.getAjudante());
-		modelAndView.addObject("ajudantes", alunoService.buscarAjudantes(atendimento.getTurma().getId(), aluno));
-		modelAndView.addObject("action", "editar");
-		return modelAndView;
-	}
+//	@PreAuthorize(PERMISSAO_ESTUDANTE)
+//	@GetMapping("/editar/{idAtendimento}")
+//	public ModelAndView formularioEditarAtendimento(@PathVariable("idAtendimento") Atendimento atendimento,
+//			Authentication auth) {
+//		ModelAndView modelAndView = new ModelAndView(FORMULARIO_ADICIONAR_ATENDIMENTO);
+//		Aluno aluno = (Aluno) auth.getPrincipal();
+//		modelAndView.addObject("atendimento", atendimento);
+//		modelAndView.addObject("turmas", turmaService.buscarAtivasPorAluno(aluno));
+//		modelAndView.addObject("paciente", atendimento.getPaciente());
+//		modelAndView.addObject("professor", atendimento.getProfessor());
+//		modelAndView.addObject("professores", atendimento.getTurma().getProfessores());
+//		modelAndView.addObject("auxiliar", atendimento.getAjudante());
+//		modelAndView.addObject("ajudantes", alunoService.buscarAjudantes(atendimento.getTurma().getId(), aluno));
+//		modelAndView.addObject("action", "editar");
+//		return modelAndView;
+//	}
 
 	@PreAuthorize(PERMISSAO_ESTUDANTE)
 	@PostMapping("/editar")
@@ -204,27 +204,27 @@ public class AtendimentoController {
 		return modelAndView;
 	}
 	
-	@PreAuthorize(PERMISSAO_ESTUDANTE_VERFICACAO_PROFESSOR_VERIFICACAO)
-	@GetMapping("/{idAtendimento}/excluir-procedimento/{idProcedimento}")
-	public ModelAndView removerProcedimento(@PathVariable("idProcedimento") Procedimento procedimento,
-			@PathVariable("idAtendimento") @Param("atendimento") Atendimento atendimento, Authentication auth,
-			RedirectAttributes attributes) {
-		ModelAndView modelAndView = new ModelAndView(REDIRECT_DETALHES_ATENDIMENTO + atendimento.getId());
-		procedimentoService.deletar(procedimento);
-		attributes.addFlashAttribute(SUCCESS, SUCCESS_EXCLUIR_PROCEDIMENTO);
-		return modelAndView;
-	}
+//	@PreAuthorize(PERMISSAO_ESTUDANTE_VERFICACAO_PROFESSOR_VERIFICACAO)
+//	@GetMapping("/{idAtendimento}/excluir-procedimento/{idProcedimento}")
+//	public ModelAndView removerProcedimento(@PathVariable("idProcedimento") Procedimento procedimento,
+//			@PathVariable("idAtendimento") @Param("atendimento") Atendimento atendimento, Authentication auth,
+//			RedirectAttributes attributes) {
+//		ModelAndView modelAndView = new ModelAndView(REDIRECT_DETALHES_ATENDIMENTO + atendimento.getId());
+//		procedimentoService.deletar(procedimento);
+//		attributes.addFlashAttribute(SUCCESS, SUCCESS_EXCLUIR_PROCEDIMENTO);
+//		return modelAndView;
+//	}
 
-	@PreAuthorize(PERMISSAO_ESTUDANTE_VERFICACAO_PROFESSOR_VERIFICACAO)
-	@GetMapping("/{idAtendimento}/excluir-patologia/{idPatologia}")
-	public ModelAndView removerPatologia(@PathVariable("idPatologia") Patologia patologia,
-			@PathVariable("idAtendimento") @Param("atendimento") Atendimento atendimento, Authentication auth,
-			RedirectAttributes attributes) {
-		ModelAndView modelAndView = new ModelAndView(REDIRECT_DETALHES_ATENDIMENTO + atendimento.getId());
-		patologiaService.deletar(patologia);
-		attributes.addFlashAttribute(SUCCESS, SUCCESS_EXCLUIR_PATOLOGIA);
-		return modelAndView;
-	}
+//	@PreAuthorize(PERMISSAO_ESTUDANTE_VERFICACAO_PROFESSOR_VERIFICACAO)
+//	@GetMapping("/{idAtendimento}/excluir-patologia/{idPatologia}")
+//	public ModelAndView removerPatologia(@PathVariable("idPatologia") Patologia patologia,
+//			@PathVariable("idAtendimento") @Param("atendimento") Atendimento atendimento, Authentication auth,
+//			RedirectAttributes attributes) {
+//		ModelAndView modelAndView = new ModelAndView(REDIRECT_DETALHES_ATENDIMENTO + atendimento.getId());
+//		patologiaService.deletar(patologia);
+//		attributes.addFlashAttribute(SUCCESS, SUCCESS_EXCLUIR_PATOLOGIA);
+//		return modelAndView;
+//	}
 
 	/*@PreAuthorize(PERMISSOES_ESTUDANTE_PROFESSOR_ADMINISTRACAO)
 	@GetMapping("/tabela-itens/{idAtendimento}")

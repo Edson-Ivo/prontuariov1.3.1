@@ -6,6 +6,7 @@ import static org.junit.Assert.fail;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -31,6 +32,16 @@ public class TurmaServiceTest extends AbstractServiceTest{
 	@Autowired
 	private ServidorService servidorService;
 	
+	private List<Servidor> professores;
+	private Disciplina disciplina;
+	
+	@Before
+	public void iniciarVariaveis() {
+		professores = new ArrayList<Servidor>();
+		professores.add(servidorService.buscarPorId(101));
+		disciplina = new Disciplina();
+	}
+	
 	@Test
 	public void testBuscarTudo(){
 		assertEquals(3, turmaService.buscarTudo().size());
@@ -48,33 +59,14 @@ public class TurmaServiceTest extends AbstractServiceTest{
 	
 	@Test
 	public void testSalvar(){
-		Turma turma = new Turma();
-		Disciplina disciplina = new Disciplina();
-		
-		List<Servidor> professores = new ArrayList<Servidor>();
-		professores.add(servidorService.buscarPorId(101));
-		
-		//Salvar uma nova turma
 		disciplina.setId(1);
-		turma.setNome("TURMA A");
-		turma.setDisciplina(disciplina);
-		turma.setAno(2016);
-		turma.setSemestre(2);
-		turma.setProfessores(professores);
-		try{
-			turmaService.salvar(turma);
-		}catch(ProntuarioException e){
-			fail("Turma não salva.");
-		}
+		
+		Turma turma = new Turma("TURMA A", 2016, 2, disciplina, professores);
+		salvar(turma);
 		assertEquals(turma, turmaService.buscarPorId(4));
 		
-		//Salvar alterações em turma existente
 		turma.setNome("TURMA B");
-		try{
-			turmaService.salvar(turma);
-		}catch(ProntuarioException e){
-			fail("Turma não salva.");
-		}
+		salvar(turma);
 		assertEquals("TURMA B", turmaService.buscarPorId(4).getNome());
 	}
 	
@@ -177,5 +169,15 @@ public class TurmaServiceTest extends AbstractServiceTest{
 		Servidor professor = new Servidor();
 		professor.setId(101);
 		assertEquals(2, turmaService.buscarTurmasProfessor(professor).size());
+	}
+	
+	private void salvar(Turma turma) {
+		
+		try{
+			turmaService.salvar(turma);
+		}catch(ProntuarioException e){
+			fail("Turma não salva.");
+		}
+		
 	}
 }
