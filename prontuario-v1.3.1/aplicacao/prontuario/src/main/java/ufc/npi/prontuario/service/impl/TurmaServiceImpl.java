@@ -121,6 +121,10 @@ public class TurmaServiceImpl implements TurmaService {
 			return usuarioRepository.findByPapeisOrderByNome(Papel.PROFESSOR);
 		}
 
+		return buscarProfessoresPeloId(professores);
+	}
+
+	private List<Usuario> buscarProfessoresPeloId(List<Servidor> professores) {
 		List<Integer> professoresId = new ArrayList<Integer>();
 		for (Usuario professor : professores) {
 			professoresId.add(professor.getId());
