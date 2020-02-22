@@ -41,20 +41,23 @@ public class PlanoTratamentoServiceImpl implements PlanoTratamentoService {
 	}
 
 	@Override
-	public void salvar(PlanoTratamento planoTratamento, Servidor responsavel, Paciente paciente) 
+	public void salvar(PlanoTratamento planoTratamento, Servidor responsavel, Paciente paciente)
 			throws ProntuarioException {
-		List<Status> statuses = Arrays.asList(Status.EM_ESPERA, Status.EM_ANDAMENTO);
-		Integer temTratamento = planoTratamentoRepository.
-				countByPacienteAndClinicaAndStatusIn(planoTratamento.getPaciente(),
-						planoTratamento.getClinica(), statuses);
-		
-		if (temTratamento == 0) {
+		if (pacienteNaoTemTratamento(planoTratamento)) {
 			planoTratamento.setResponsavel(responsavel);
 			planoTratamento.setPaciente(paciente);
 			planoTratamentoRepository.save(planoTratamento);
 		} else {
 			throw new ProntuarioException(ERRO_ADD_PLANO_TRATAMENTO);
 		}
+	}
+
+	private boolean pacienteNaoTemTratamento(PlanoTratamento planoTratamento) {
+		List<Status> statusList = Arrays.asList(Status.EM_ESPERA, Status.EM_ANDAMENTO);
+		Integer quantidateTratamentos = planoTratamentoRepository.countByPacienteAndClinicaAndStatusIn(
+				planoTratamento.getPaciente(), planoTratamento.getClinica(), statusList);
+
+		return quantidateTratamentos == 0;
 	}
 
 	@Override

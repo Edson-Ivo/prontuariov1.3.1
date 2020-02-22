@@ -134,11 +134,15 @@ public class AtendimentoServiceImpl implements AtendimentoService {
 
 	@Override
 	public Atendimento adicionarAvaliacaoAtendimento(Atendimento atendimento) {
-		if (Objects.isNull(atendimento.getAvaliacao())) {
+		if (verificarAvaliacaoAtendimento(atendimento)) {
 			atendimento.setAvaliacao(getAvaliacaoAtendimento());
 			atendimentoRepository.saveAndFlush(atendimento);
 		}
 		return atendimento;
+	}
+
+	private boolean verificarAvaliacaoAtendimento(Atendimento atendimento) {
+		return Objects.isNull(atendimento.getAvaliacao());
 	}
 	
 	private AvaliacaoAtendimento getAvaliacaoAtendimento() {

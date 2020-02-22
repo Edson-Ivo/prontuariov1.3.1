@@ -1,7 +1,7 @@
 package ufc.npi.prontuario.service.impl;
 
-import static ufc.npi.prontuario.util.ExceptionSuccessConstants.ERRO_PACIENTE_CPF_EXISTENTE;
 import static ufc.npi.prontuario.util.ExceptionSuccessConstants.ERRO_PACIENTE_CNS_EXISTENTE;
+import static ufc.npi.prontuario.util.ExceptionSuccessConstants.ERRO_PACIENTE_CPF_EXISTENTE;
 
 import java.util.List;
 
@@ -18,32 +18,77 @@ import ufc.npi.prontuario.service.PacienteService;
 @Service
 public class PacienteServiceImpl implements PacienteService {
 
-    @Autowired
-    private PacienteRepository pacienteRepository;
+	@Autowired
+	private PacienteRepository pacienteRepository;
+
+	@Override
+	public void salvar(Paciente paciente) throws ProntuarioException {
+		inicializarOdontogramaPaciente(paciente);
+
+		verificarCpfDuplicado(paciente);
+
+		verificarCnsDuplicado(paciente);
 
     @Override
     public void salvar(Paciente paciente) throws ProntuarioException {
         if (paciente.getId() == null) {
-            paciente.setOdontograma(new Odontograma());
+            criarOdontogramaEmPaciente(paciente);
         }
 
         if (!paciente.getCpf().isEmpty()) {
-            Paciente pacienteExistente = buscarByCpf(paciente.getCpf());
-
-            if (pacienteExistente != null && !pacienteExistente.equals(paciente)) {
-                throw new ProntuarioException(ERRO_PACIENTE_CPF_EXISTENTE);
-            }
+            verificarSePacienteTemCPF(paciente);
         }
 
         if (!paciente.getCns().isEmpty()) {
-            Paciente pacienteExistente = buscarByCns(paciente.getCns());
-
-            if (pacienteExistente != null && !pacienteExistente.equals(paciente)) {
-                throw new ProntuarioException(ERRO_PACIENTE_CNS_EXISTENTE);
-            }
+            verificarSePacienteTemCNS(paciente);
         }
+		pacienteRepository.save(paciente);
+	}
 
-        pacienteRepository.save(paciente);
+	private void inicializarOdontogramaPaciente(Paciente paciente) {
+		if (paciente.getId() == null) {
+			paciente.setOdontograma(new Odontograma());
+		}
+	}
+
+	private void verificarCpfDuplicado(Paciente novoPaciente) throws ProntuarioException {
+		if (!novoPaciente.getCpf().isEmpty()) {
+			Paciente pacienteExistente = buscarByCpf(novoPaciente.getCpf());
+
+			if (pacienteExistente != null && !pacienteExistente.equals(novoPaciente)) {
+				throw new ProntuarioException(ERRO_PACIENTE_CPF_EXISTENTE);
+			}
+		}
+	}
+
+	private void verificarCnsDuplicado(Paciente novoPaciente) throws ProntuarioException {
+		if (!novoPaciente.getCns().isEmpty()) {
+			Paciente pacienteExistente = buscarByCns(novoPaciente.getCns());
+      
+			if (pacienteExistente != null && !pacienteExistente.equals(novoPaciente)) {
+				throw new ProntuarioException(ERRO_PACIENTE_CNS_EXISTENTE);
+			}
+		}
+	}
+
+    private void criarOdontogramaEmPaciente(Paciente paciente) {
+        paciente.setOdontograma(new Odontograma());
+    }
+
+    private void verificarSePacienteTemCPF(Paciente paciente) throws ProntuarioException {
+        Paciente pacienteExistente = buscarByCpf(paciente.getCpf());
+
+        if (pacienteExistente != null && !pacienteExistente.equals(paciente)) {
+            throw new ProntuarioException(ERRO_PACIENTE_CPF_EXISTENTE);
+        }
+    }
+
+    private void verificarSePacienteTemCNS(Paciente paciente) throws ProntuarioException {
+        Paciente pacienteExistente = buscarByCns(paciente.getCns());
+
+        if (pacienteExistente != null && !pacienteExistente.equals(paciente)) {
+            throw new ProntuarioException(ERRO_PACIENTE_CNS_EXISTENTE);
+        }
     }
 
     @Override
@@ -51,20 +96,21 @@ public class PacienteServiceImpl implements PacienteService {
         return pacienteRepository.findAll();
     }
 
-    @Override
-    public void adicionarAnamnese(Paciente paciente, PacienteAnamnese anamnese) {
-        paciente.addPacienteAnamnese(anamnese);
-        pacienteRepository.save(paciente);
-    }
 
-    @Override
-    public Paciente buscarByCpf(String cpf) {
+	@Override
+	public void adicionarAnamnese(Paciente paciente, PacienteAnamnese anamnese) {
+		paciente.addPacienteAnamnese(anamnese);
+		pacienteRepository.save(paciente);
+	}
 
-        return pacienteRepository.findByCpf(cpf);
-    }
+	@Override
+	public Paciente buscarByCpf(String cpf) {
 
-    @Override
-    public Paciente buscarByCns(String cns) {
-        return pacienteRepository.findByCns(cns);
-    }
+		return pacienteRepository.findByCpf(cpf);
+	}
+
+	@Override
+	public Paciente buscarByCns(String cns) {
+		return pacienteRepository.findByCns(cns);
+	}
 }

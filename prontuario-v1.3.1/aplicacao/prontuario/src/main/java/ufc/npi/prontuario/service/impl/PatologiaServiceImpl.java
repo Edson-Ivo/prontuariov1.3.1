@@ -8,7 +8,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import ufc.npi.prontuario.exception.ProntuarioException;
@@ -23,7 +22,6 @@ import ufc.npi.prontuario.model.Papel;
 import ufc.npi.prontuario.model.Patologia;
 import ufc.npi.prontuario.model.Servidor;
 import ufc.npi.prontuario.model.TipoPatologia;
-import ufc.npi.prontuario.model.Tratamento;
 import ufc.npi.prontuario.model.Usuario;
 import ufc.npi.prontuario.repository.AlunoRepository;
 import ufc.npi.prontuario.repository.AtendimentoRepository;
@@ -41,7 +39,7 @@ public class PatologiaServiceImpl implements PatologiaService {
 
 	@Autowired
 	private PatologiaRepository patologiaRepository;
-	
+
 	@Autowired
 	private TipoPatologiaService tipoPatologiaService;
 
@@ -68,7 +66,7 @@ public class PatologiaServiceImpl implements PatologiaService {
 		FaceDente face = null;
 		Dente dente = null;
 		Local local = Local.valueOf(localString);
-		
+
 		if (local == Local.FACE) {
 			face = FaceDente.valueOf(faceDente.substring(3));
 			dente = Dente.valueOf("D" + faceDente.substring(0, 2));
@@ -78,28 +76,29 @@ public class PatologiaServiceImpl implements PatologiaService {
 			dente = Dente.valueOf("D" + faceDente);
 		}
 
-		Patologia patologia = new Patologia(dente, face, local, descricao, new Date(), odontograma, atendimentos.get(0));
+		Patologia patologia = new Patologia(dente, face, local, descricao, new Date(), odontograma,
+				atendimentos.get(0));
 		List<Patologia> patologias = setarTiposPatologias(idPatologias, patologia);
 		salvarPatologias(patologias);
-		
+
 		return patologias;
 	}
 
 	private List<Patologia> setarTiposPatologias(List<Integer> idPatologias, Patologia patologia) {
 		List<Patologia> patologias = new ArrayList<Patologia>();
 		List<TipoPatologia> tipos = tipoPatologiaService.buscarPorIds(idPatologias);
-		
+
 		for (TipoPatologia tipo : tipos) {
 			patologia.setTipo(tipo);
 			patologias.add(patologia);
 		}
-		
+
 		return patologias;
 	}
 
 	private void salvarPatologias(List<Patologia> patologias) {
-		
-		for (Patologia patologia : patologias) {			
+
+		for (Patologia patologia : patologias) {
 			patologiaRepository.save(patologia);
 		}
 	}
@@ -118,7 +117,7 @@ public class PatologiaServiceImpl implements PatologiaService {
 
 		// Adicionando as patologias que o usuário logado é o responsável,
 		// ajudante ou professor
-		
+
 		if (aluno != null) {
 			patologias = patologiaRepository
 					.findAllByOdontogramaAndAtendimentoResponsavelOrOdontogramaAndAtendimentoAjudante(odontograma,
@@ -126,7 +125,7 @@ public class PatologiaServiceImpl implements PatologiaService {
 		} else if (servidor != null) {
 			patologias = patologiaRepository.findAllByOdontogramaAndAtendimentoProfessor(odontograma, servidor);
 		}
-		if(usuario.getPapeis().contains(Papel.ADMINISTRACAO)){
+		if (usuario.getPapeis().contains(Papel.ADMINISTRACAO)) {
 			patologias = patologiaRepository.findAllByOdontograma(odontograma);
 		}
 
@@ -148,7 +147,7 @@ public class PatologiaServiceImpl implements PatologiaService {
 			patologias.addAll(patologiaRepository.findAllByOdontogramaAndIdIsNotInAndAtendimentoStatus(odontograma,
 					idPatologias, Status.VALIDADO));
 		}
-		
+
 		Collections.sort(patologias);
 
 		return patologias;
@@ -160,29 +159,53 @@ public class PatologiaServiceImpl implements PatologiaService {
 	}
 
 	@Override
-	public List<Patologia> buscarPatologiasDentePaciente(Odontograma odontograma, String faceDente, String dente, Aluno aluno) {
+	public List<Patologia> buscarPatologiasDentePaciente(Odontograma odontograma, String faceDenteString,
+			String denteString, Aluno aluno) {
 		List<Patologia> patologias = new ArrayList<>();
 
-		Dente d = null;
-		FaceDente f = null;
+		Dente dente = obterDentePorString(faceDenteString, denteString);
+		FaceDente faceDente = obterFaceDentePorString(faceDenteString);
 
-		if (faceDente != null) {
-			d = Dente.valueOf("D" + faceDente.substring(0, 2));
-			f = FaceDente.valueOf(faceDente.substring(3, 4));
-		} else if (dente != null) {
-			d = Dente.valueOf("D" + dente);
-		}
-
-		for (Patologia p : odontograma.getPatologias()) {
-			if ((p.getAtendimento().isValidado() || p.getAtendimento().getResponsavel().equals(aluno))
-					&& p.getTratamento() == null && (p.getLocal().equals(Local.GERAL) 
-					|| (p.getDente() != null && p.getDente().equals(d)
-						&& (p.getFace() == null || p.getFace().equals(f))))) {
-				patologias.add(p);
+		for (Patologia patologia : odontograma.getPatologias()) {
+			if (atendimentoEValidoOuPertenceAoAluno(patologia.getAtendimento(), aluno)
+					&& patologiaEValida(patologia, dente, faceDente)) {
+				patologias.add(patologia);
 			}
 		}
 
 		return patologias;
+	}
+
+	private boolean atendimentoEValidoOuPertenceAoAluno(Atendimento atendimento, Aluno aluno) {
+		return atendimento.isValidado() || atendimento.getResponsavel().equals(aluno);
+	}
+
+	private boolean patologiaEValida(Patologia patologia, Dente dente, FaceDente faceDente) {
+		return patologia.getTratamento() == null && (patologia.getLocal().equals(Local.GERAL)
+				|| (patologia.getDente() != null && patologia.getDente().equals(dente)
+						&& (patologia.getFace() == null || patologia.getFace().equals(faceDente))));
+	}
+
+	private Dente obterDentePorString(String faceDenteString, String denteString) {
+		Dente dente = null;
+
+		if (faceDenteString != null) {
+			dente = Dente.valueOf("D" + faceDenteString.substring(0, 2));
+		} else if (denteString != null) {
+			dente = Dente.valueOf("D" + denteString);
+		}
+
+		return dente;
+	}
+
+	private FaceDente obterFaceDentePorString(String faceDenteString) {
+		FaceDente faceDente = null;
+
+		if (faceDenteString != null) {
+			faceDente = FaceDente.valueOf(faceDenteString.substring(3, 4));
+		}
+
+		return faceDente;
 	}
 
 	public void deletar(Patologia patologia) {

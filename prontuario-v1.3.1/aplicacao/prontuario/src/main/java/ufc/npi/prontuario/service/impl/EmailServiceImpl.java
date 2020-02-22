@@ -45,10 +45,10 @@ public class EmailServiceImpl implements EmailService {
 
 	@Autowired
 	private TemplateEngine templateEngine;
-	
+
 	@Autowired
 	private AtendimentoRepository atendimentoRepository;
-	
+
 	private DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.FULL);
 
 	private void enviarEmail(MimeMessage email) {
@@ -60,7 +60,7 @@ public class EmailServiceImpl implements EmailService {
 			this.enviarEmail(email);
 		}
 	}
-	
+
 	private String formatDate(Date date) {
 		return dateFormat.format(date);
 	}
@@ -102,11 +102,38 @@ public class EmailServiceImpl implements EmailService {
 	public void notificarAtendimentoAndamento() {
 		List<MimeMessage> emails = new ArrayList<>();
 		List<Atendimento> atendimentos = atendimentoRepository.findAllByStatus(Status.EM_ANDAMENTO);
-		
+
 		if (!atendimentos.isEmpty()) {
 			construirEmails(emails, atendimentos);
+
+			MimeMessage mimeMessage;
+			MimeMessageHelper mensagem;
+			String destinatario = null;
+			String assuntoEmail = null;
+			String texto = null;
+			for (Atendimento a : atendimentos) {
+				mimeMessage = mailSender.createMimeMessage();
+				mensagem = new MimeMessageHelper(mimeMessage, "UTF-8");
+
+				destinatario = a.getResponsavel().getEmail();
+				assuntoEmail = ASSUNTO_ATENDIMENTO_ANDAMENTO;
+				texto = TEXTO_ATENDIMENTO_ANDAMENTO.replace(DATA, formatDate(a.getData()))
+						.replaceAll(TURMA, a.getTurma().getNome())
+						.replaceAll(DISCIPLINA, a.getTurma().getDisciplina().getNome());
+
+				try {
+					mensagem.setTo(destinatario);
+					mensagem.setFrom(EMAIL_REMETENTE);
+					mensagem.setSubject(assuntoEmail);
+					mensagem.setText(texto, true);
+					emails.add(mimeMessage);
+				} catch (MessagingException e) {
+					e.printStackTrace();
+					continue;
+				}
+			}
 		}
-		
+
 		enviarEmails(emails);
 	}
 
@@ -150,31 +177,15 @@ public class EmailServiceImpl implements EmailService {
 	@Override
 	public void notificarAtendimentoAvaliacao() {
 		List<MimeMessage> emails = new ArrayList<>();
-		
 		List<Atendimento> atendimentos = atendimentoRepository.findAllByStatus(Status.REALIZADO);
-		
+
 		if (!atendimentos.isEmpty()) {
-			MimeMessage mimeMessage;
-			MimeMessageHelper mensagem;
-			String destinatario = null;
-			String assuntoEmail = null;
-			String texto = null;
-			for (Atendimento a : atendimentos) {
-				mimeMessage = mailSender.createMimeMessage();
-				mensagem = new MimeMessageHelper(mimeMessage, "UTF-8");
-				
-				destinatario = a.getProfessor().getEmail();
-				assuntoEmail = ASSUNTO_ATENDIMENTO_AVALIACAO;
-				texto = TEXTO_ATENDIMENTO_AVALIACAO.replace(DATA, formatDate(a.getData()))
-						.replaceAll(TURMA, a.getTurma().getNome())
-						.replaceAll(DISCIPLINA, a.getTurma().getDisciplina().getNome())
-						.replaceAll(RESPONSAVEL, a.getResponsavel().getNome());
-				
+			for (Atendimento atendimento : atendimentos) {
 				try {
-					mensagem.setTo(destinatario);
-					mensagem.setFrom(EMAIL_REMETENTE);
-					mensagem.setSubject(assuntoEmail);
-					mensagem.setText(texto, true);
+					MimeMessage mimeMessage = mailSender.createMimeMessage();
+
+					criarMensagemAtendimento(mimeMessage, atendimento);
+
 					emails.add(mimeMessage);
 				} catch (MessagingException e) {
 					e.printStackTrace();
@@ -182,7 +193,23 @@ public class EmailServiceImpl implements EmailService {
 				}
 			}
 		}
-		
+
 		enviarEmails(emails);
+	}
+
+	private void criarMensagemAtendimento(MimeMessage mimeMessage, Atendimento atendimento) throws MessagingException {
+		MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, "UTF-8");
+
+		String destinatario = atendimento.getProfessor().getEmail();
+		String assunto = ASSUNTO_ATENDIMENTO_AVALIACAO;
+		String texto = TEXTO_ATENDIMENTO_AVALIACAO.replace(DATA, formatDate(atendimento.getData()))
+				.replaceAll(TURMA, atendimento.getTurma().getNome())
+				.replaceAll(DISCIPLINA, atendimento.getTurma().getDisciplina().getNome())
+				.replaceAll(RESPONSAVEL, atendimento.getResponsavel().getNome());
+
+		mimeMessageHelper.setTo(destinatario);
+		mimeMessageHelper.setFrom(EMAIL_REMETENTE);
+		mimeMessageHelper.setSubject(assunto);
+		mimeMessageHelper.setText(texto, true);
 	}
 }
