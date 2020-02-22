@@ -104,6 +104,8 @@ public class EmailServiceImpl implements EmailService {
 		List<Atendimento> atendimentos = atendimentoRepository.findAllByStatus(Status.EM_ANDAMENTO);
 
 		if (!atendimentos.isEmpty()) {
+			construirEmails(emails, atendimentos);
+
 			MimeMessage mimeMessage;
 			MimeMessageHelper mensagem;
 			String destinatario = null;
@@ -133,6 +135,43 @@ public class EmailServiceImpl implements EmailService {
 		}
 
 		enviarEmails(emails);
+	}
+
+	private void construirEmails(List<MimeMessage> emails, List<Atendimento> atendimentos) {
+		MimeMessage mimeMessage;
+		MimeMessageHelper mensagem;
+		String destinatario = null;
+		String assuntoEmail = null;
+		String texto = null;
+
+		for (Atendimento a : atendimentos) {
+			mimeMessage = mailSender.createMimeMessage();
+			mensagem = new MimeMessageHelper(mimeMessage, "UTF-8");
+
+			destinatario = a.getResponsavel().getEmail();
+			assuntoEmail = ASSUNTO_ATENDIMENTO_ANDAMENTO;
+			texto = gerarTextoMensagem(a);
+
+			try {
+				configurarMensagem(mensagem, destinatario, assuntoEmail, texto);
+				emails.add(mimeMessage);
+			} catch (MessagingException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	private String gerarTextoMensagem(Atendimento a) {
+		return TEXTO_ATENDIMENTO_ANDAMENTO.replace(DATA, formatDate(a.getData()))
+				.replaceAll(TURMA, a.getTurma().getNome())
+				.replaceAll(DISCIPLINA, a.getTurma().getDisciplina().getNome());
+	}
+
+	private void configurarMensagem(MimeMessageHelper mensagem, String destinatario, String assuntoEmail, String texto) throws MessagingException {
+			mensagem.setTo(destinatario);
+			mensagem.setFrom(EMAIL_REMETENTE);
+			mensagem.setSubject(assuntoEmail);
+			mensagem.setText(texto, true);
 	}
 
 	@Override
