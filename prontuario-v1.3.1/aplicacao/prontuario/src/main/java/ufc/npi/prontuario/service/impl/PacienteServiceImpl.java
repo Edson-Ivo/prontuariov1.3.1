@@ -29,6 +29,19 @@ public class PacienteServiceImpl implements PacienteService {
 
 		verificarCnsDuplicado(paciente);
 
+    @Override
+    public void salvar(Paciente paciente) throws ProntuarioException {
+        if (paciente.getId() == null) {
+            criarOdontogramaEmPaciente(paciente);
+        }
+
+        if (!paciente.getCpf().isEmpty()) {
+            verificarSePacienteTemCPF(paciente);
+        }
+
+        if (!paciente.getCns().isEmpty()) {
+            verificarSePacienteTemCNS(paciente);
+        }
 		pacienteRepository.save(paciente);
 	}
 
@@ -51,17 +64,38 @@ public class PacienteServiceImpl implements PacienteService {
 	private void verificarCnsDuplicado(Paciente novoPaciente) throws ProntuarioException {
 		if (!novoPaciente.getCns().isEmpty()) {
 			Paciente pacienteExistente = buscarByCns(novoPaciente.getCns());
-
+      
 			if (pacienteExistente != null && !pacienteExistente.equals(novoPaciente)) {
 				throw new ProntuarioException(ERRO_PACIENTE_CNS_EXISTENTE);
 			}
 		}
 	}
 
-	@Override
-	public List<Paciente> buscarTudo() {
-		return pacienteRepository.findAll();
-	}
+    private void criarOdontogramaEmPaciente(Paciente paciente) {
+        paciente.setOdontograma(new Odontograma());
+    }
+
+    private void verificarSePacienteTemCPF(Paciente paciente) throws ProntuarioException {
+        Paciente pacienteExistente = buscarByCpf(paciente.getCpf());
+
+        if (pacienteExistente != null && !pacienteExistente.equals(paciente)) {
+            throw new ProntuarioException(ERRO_PACIENTE_CPF_EXISTENTE);
+        }
+    }
+
+    private void verificarSePacienteTemCNS(Paciente paciente) throws ProntuarioException {
+        Paciente pacienteExistente = buscarByCns(paciente.getCns());
+
+        if (pacienteExistente != null && !pacienteExistente.equals(paciente)) {
+            throw new ProntuarioException(ERRO_PACIENTE_CNS_EXISTENTE);
+        }
+    }
+
+    @Override
+    public List<Paciente> buscarTudo() {
+        return pacienteRepository.findAll();
+    }
+
 
 	@Override
 	public void adicionarAnamnese(Paciente paciente, PacienteAnamnese anamnese) {
