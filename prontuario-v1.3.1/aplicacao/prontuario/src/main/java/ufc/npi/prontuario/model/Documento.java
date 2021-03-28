@@ -78,8 +78,14 @@ public class Documento {
 	public void setTipo(TipoDocumento tipo) {
 		this.tipo = tipo;
 	}
-
-
+	///////////////////////////////
+	public void setNomeArqCam(String nome,byte[] arquivo,String caminho) {
+		this.arquivo=arquivo;
+		this.caminho=caminho;
+		this.nome=nome;
+	}
+	//////////////////////////////
+	
 	public enum TipoDocumento {
 		PDF("pdf"), JPG("jpg"), JPEG("jpeg"), PNG("png"), GIF("gif");
 		

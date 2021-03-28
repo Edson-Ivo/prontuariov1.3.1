@@ -9,11 +9,16 @@ import org.springframework.web.servlet.ModelAndView;
 import ufc.npi.prontuario.model.Aluno;
 import ufc.npi.prontuario.model.Atendimento;
 import ufc.npi.prontuario.model.Paciente;
+import ufc.npi.prontuario.model.Servidor;
+import ufc.npi.prontuario.model.Turma;
+import ufc.npi.prontuario.model.GetProfessorTurma;
 import ufc.npi.prontuario.service.AlunoService;
 import ufc.npi.prontuario.service.TurmaService;
 
 import static ufc.npi.prontuario.util.ConfigurationConstants.PERMISSAO_ESTUDANTE;
 import static ufc.npi.prontuario.util.PagesConstants.FORMULARIO_ADICIONAR_ATENDIMENTO;
+
+import java.util.List;
 
 public class FormularioAtendimentoController {
 
@@ -35,6 +40,10 @@ public class FormularioAtendimentoController {
         return modelAndView;
     }
 
+    public List<Servidor> mostrarTurmaProfessores(Turma turma){
+		return GetProfessorTurma.mostrarTurmaProfessores(turma);
+	}
+
     @PreAuthorize(PERMISSAO_ESTUDANTE)
     @GetMapping("/editar/{idAtendimento}")
     public ModelAndView formularioEditarAtendimento(@PathVariable("idAtendimento") Atendimento atendimento,
@@ -45,7 +54,7 @@ public class FormularioAtendimentoController {
         modelAndView.addObject("turmas", turmaService.buscarAtivasPorAluno(aluno));
         modelAndView.addObject("paciente", atendimento.getPaciente());
         modelAndView.addObject("professor", atendimento.getProfessor());
-        modelAndView.addObject("professores", atendimento.getTurma().getProfessores());
+        modelAndView.addObject("professores", mostrarTurmaProfessores(atendimento.getTurma()));
         modelAndView.addObject("auxiliar", atendimento.getAjudante());
         modelAndView.addObject("ajudantes", alunoService.buscarAjudantes(atendimento.getTurma().getId(), aluno));
         modelAndView.addObject("action", "editar");

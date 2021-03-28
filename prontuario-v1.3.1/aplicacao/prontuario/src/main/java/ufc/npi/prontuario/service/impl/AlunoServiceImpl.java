@@ -7,7 +7,12 @@ import org.springframework.stereotype.Service;
 
 import ufc.npi.prontuario.exception.ProntuarioException;
 import ufc.npi.prontuario.model.Aluno;
+import ufc.npi.prontuario.model.GetEmailUsuario;
+import ufc.npi.prontuario.model.GetMatriculaUsuario;
+import ufc.npi.prontuario.model.GetUsuarioId;
 import ufc.npi.prontuario.model.Papel;
+import ufc.npi.prontuario.model.Usuario;
+import ufc.npi.prontuario.model.SetSenhaUsuario;
 import ufc.npi.prontuario.repository.AlunoRepository;
 import ufc.npi.prontuario.service.AlunoService;
 
@@ -26,33 +31,57 @@ public class AlunoServiceImpl implements AlunoService {
 
 	@Override
 	public void salvar(Aluno aluno) throws ProntuarioException {
-		if(aluno.getNome().trim().isEmpty() || aluno.getEmail().trim().isEmpty() || aluno.getMatricula().trim().isEmpty()
+		if(aluno.getNome().trim().isEmpty() || GetEmailUsuario.getUsuarioEmail(aluno).trim().isEmpty() || GetMatriculaUsuario.getUsuarioMatricula(aluno).trim().isEmpty()
 				|| aluno.getAnoIngresso() == null){
 			throw new ProntuarioException(ERRO_CAMPOS_OBRIGATORIOS);
 		}
-		if(buscarPorMatricula(aluno.getMatricula()) != null){
+		if(buscarPorMatricula(GetMatriculaUsuario.getUsuarioMatricula(aluno)) != null){
 			throw new ProntuarioException(ERRO_ADICIONAR_ALUNO);
 		}
 		aluno.addPapel(Papel.ESTUDANTE);
-		aluno.setSenha(aluno.getMatricula());
+		SetSenhaUsuario.setUsuarioSenha(aluno,GetMatriculaUsuario.getUsuarioMatricula(aluno));
 		aluno.encodePassword();
 		alunoRepository.save(aluno);
 	}
-	
+////////////////////////////////////////////////////////////////////////////////////////////	
 	public void atualizar(Aluno aluno) throws ProntuarioException {
-		if(aluno.getNome().trim().isEmpty() || aluno.getEmail().trim().isEmpty() || aluno.getMatricula().trim().isEmpty()
-				|| aluno.getAnoIngresso() == null){
+		if(verificarAluno(aluno)){
 			throw new ProntuarioException(ERRO_CAMPOS_OBRIGATORIOS);
 		}
 			
-		Aluno alunoExistente = buscarPorMatricula(aluno.getMatricula());
-		if(alunoExistente != null && !alunoExistente.getId().equals(aluno.getId())) {
+		Aluno alunoExistente = buscarPorMatricula(GetMatriculaUsuario.getUsuarioMatricula(aluno));
+		if(alunoExiste(alunoExistente, aluno)) {
 			throw new ProntuarioException(ERRO_ATUALIZAR_ALUNO);
 		}
-		aluno.setSenha(alunoRepository.findOne(aluno.getId()).getSenha());
+		
+		SetSenhaUsuario.setUsuarioSenha(aluno,getSenhaAluno(aluno));
 		alunoRepository.save(aluno);
 	}
 	
+	public String getSenhaAluno(Aluno aluno) {
+		return alunoRepository.findOne(GetUsuarioId.mostrarIdUsuario(aluno)).getSenha();
+	}
+	
+	public boolean alunoExiste(Aluno alunoExistente, Aluno aluno) {
+		return alunoExistente != null && !GetUsuarioId.mostrarIdUsuario(alunoExistente).equals(GetUsuarioId.mostrarIdUsuario(aluno));
+	}
+	
+	public boolean verificarAluno(Aluno aluno) {
+		boolean nomeAlunoVazio = aluno.getNome().trim().isEmpty();
+		boolean emailAlunoVazio = GetEmailUsuario.getUsuarioEmail(aluno).trim().isEmpty();
+		boolean matriculaAlunoVazio = verificarMatriculaAluno(aluno);
+		boolean anoIngressoAluno = verificarAluno(aluno);
+		return nomeAlunoVazio || emailAlunoVazio || matriculaAlunoVazio || anoIngressoAluno;
+	}
+	
+	public boolean verificarMatriculaAluno(Aluno aluno) {
+		return GetMatriculaUsuario.getUsuarioMatricula(aluno).trim().isEmpty();	
+	}
+	
+	public boolean verificarIngressoAluno(Aluno aluno) {
+		return aluno.getAnoIngresso() == null;	
+	}
+//////////////////////////////////////////////////////////////////////////////////
 	@Override
 	public void removerAluno(Integer id) throws ProntuarioException {
 		Aluno aluno=alunoRepository.findOne(id);
@@ -75,7 +104,7 @@ public class AlunoServiceImpl implements AlunoService {
 
 	@Override
 	public List<Aluno> buscarAjudantes(Integer idTurma, Aluno responsavel) {
-		if(alunoRepository.exists(responsavel.getId())){
+		if(alunoRepository.exists(GetUsuarioId.mostrarIdUsuario(responsavel))){
 			List<Aluno> ajudantes = alunoRepository.findAllByAlunoTurmasTurmaIdEqualsAndAlunoTurmasAtivoIsTrue(idTurma);
 			ajudantes.remove(responsavel);
 			return ajudantes;

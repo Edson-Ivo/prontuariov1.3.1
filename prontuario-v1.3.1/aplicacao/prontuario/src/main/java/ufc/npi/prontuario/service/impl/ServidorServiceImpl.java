@@ -13,8 +13,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import ufc.npi.prontuario.exception.ProntuarioException;
+import ufc.npi.prontuario.model.GetEmailUsuario;
+import ufc.npi.prontuario.model.GetMatriculaUsuario;
+import ufc.npi.prontuario.model.GetUsuarioId;
 import ufc.npi.prontuario.model.Servidor;
 import ufc.npi.prontuario.model.Usuario;
+import ufc.npi.prontuario.model.SetSenhaUsuario;
 import ufc.npi.prontuario.repository.AtendimentoRepository;
 import ufc.npi.prontuario.repository.ServidorRepository;
 import ufc.npi.prontuario.repository.TurmaRepository;
@@ -50,7 +54,7 @@ public class ServidorServiceImpl implements ServidorService {
 			throw new ProntuarioException(ERRO_ADICIONAR_SERVIDOR_PAPEL);
 		}
 
-		servidor.setSenha(servidor.getMatricula());
+		SetSenhaUsuario.setUsuarioSenha(servidor,GetMatriculaUsuario.getUsuarioMatricula(servidor));
 		servidor.encodePassword();
 		servidorRepository.save(servidor);
 	}
@@ -60,7 +64,7 @@ public class ServidorServiceImpl implements ServidorService {
 	}
 
 	private boolean verificarEmailMatricula(Servidor servidor) {
-		return usuarioRepository.findByEmail(servidor.getEmail()) != null || usuarioRepository.findByMatricula(servidor.getMatricula()) != null;
+		return usuarioRepository.findByEmail(GetEmailUsuario.getUsuarioEmail(servidor)) != null || usuarioRepository.findByMatricula(GetMatriculaUsuario.getUsuarioMatricula(servidor)) != null;
 	}
 
 	private boolean verificarServidorTemPapeis(Servidor servidor) {
@@ -68,15 +72,15 @@ public class ServidorServiceImpl implements ServidorService {
 	}
 
 	public void atualizar(Servidor servidor) throws ProntuarioException {
-		if(servidor.getId() == null || servidor.getNome().trim().isEmpty() || servidor.getEmail().trim().isEmpty() || servidor.getMatricula().trim().isEmpty()) {
+		if(GetUsuarioId.mostrarIdUsuario(servidor) == null || servidor.getNome().trim().isEmpty() || GetEmailUsuario.getUsuarioEmail(servidor).trim().isEmpty() || GetMatriculaUsuario.getUsuarioMatricula(servidor).trim().isEmpty()) {
 			throw new ProntuarioException(ERRO_CAMPOS_OBRIGATORIOS);
 		}
-		Usuario aux = usuarioRepository.findByEmail(servidor.getEmail());
-		if(aux != null && !aux.getId().equals(servidor.getId())) {
+		Usuario aux = usuarioRepository.findByEmail(GetEmailUsuario.getUsuarioEmail(servidor));
+		if(aux != null && !GetUsuarioId.mostrarIdUsuario(aux).equals(GetUsuarioId.mostrarIdUsuario(servidor))) {
 			throw new ProntuarioException(ERRO_ADICIONAR_SERVIDOR);
 		}
-		aux = usuarioRepository.findByMatricula(servidor.getMatricula());
-		if(aux != null && !aux.getId().equals(servidor.getId())) {
+		aux = usuarioRepository.findByMatricula(GetMatriculaUsuario.getUsuarioMatricula(servidor));
+		if(aux != null && !GetUsuarioId.mostrarIdUsuario(aux).equals(GetUsuarioId.mostrarIdUsuario(servidor))) {
 			throw new ProntuarioException(ERRO_ADICIONAR_SERVIDOR);
 		}
 		
@@ -90,7 +94,7 @@ public class ServidorServiceImpl implements ServidorService {
 		
 		
 
-		servidor.setSenha(servidorRepository.findOne(servidor.getId()).getSenha());
+		SetSenhaUsuario.setUsuarioSenha(servidor,servidorRepository.findOne(GetUsuarioId.mostrarIdUsuario(servidor)).getSenha());
 		servidorRepository.save(servidor);
 	}
 

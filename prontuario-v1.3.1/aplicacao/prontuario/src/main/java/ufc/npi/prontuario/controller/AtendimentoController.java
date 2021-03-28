@@ -43,6 +43,8 @@ import ufc.npi.prontuario.model.Aluno;
 import ufc.npi.prontuario.model.Atendimento;
 import ufc.npi.prontuario.model.Atendimento.Status;
 import ufc.npi.prontuario.model.AvaliacaoAtendimento;
+import ufc.npi.prontuario.model.GetAtendimentoId;
+import ufc.npi.prontuario.model.GetPacienteId;
 import ufc.npi.prontuario.model.Paciente;
 import ufc.npi.prontuario.model.Papel;
 import ufc.npi.prontuario.model.Patologia;
@@ -106,7 +108,7 @@ public class AtendimentoController {
 	public ModelAndView cadastrarAtendimento(Atendimento atendimento, @RequestParam("paciente") Paciente paciente,
 			RedirectAttributes attributes) {
 		atendimento.setPaciente(paciente);
-		ModelAndView modelAndView = new ModelAndView("redirect:/paciente/" + paciente.getId() + "/atendimentos");
+		ModelAndView modelAndView = new ModelAndView("redirect:/paciente/" + GetPacienteId.mostrarIdPaciente(paciente) + "/atendimentos");
 		try {
 			atendimentoService.salvar(atendimento);
 			attributes.addFlashAttribute(SUCCESS, SUCCESS_CADASTRAR_ATENDIMENTO);
@@ -136,7 +138,7 @@ public class AtendimentoController {
 	@PreAuthorize(PERMISSAO_ESTUDANTE)
 	@PostMapping("/editar")
 	public ModelAndView editarAtendimento(Atendimento atendimento, RedirectAttributes attributes) {
-		ModelAndView modelAndView = new ModelAndView("redirect:/atendimento/" + atendimento.getId());
+		ModelAndView modelAndView = new ModelAndView("redirect:/atendimento/" + GetAtendimentoId.getIdAtendimento(atendimento));
 		try {
 			atendimentoService.atualizar(atendimento);
 			attributes.addFlashAttribute(SUCCESS, SUCCESS_EDITAR_ATENDIMENTO);
@@ -174,7 +176,7 @@ public class AtendimentoController {
 		} catch (ProntuarioException e) {
 			attributes.addFlashAttribute(ERROR, e.getMessage());
 		}
-		ModelAndView modelAndView = new ModelAndView(REDIRECT_DETALHES_ATENDIMENTO + atendimento.getId());
+		ModelAndView modelAndView = new ModelAndView(REDIRECT_DETALHES_ATENDIMENTO + GetAtendimentoId.getIdAtendimento(atendimento));
 		attributes.addFlashAttribute(SUCCESS, SUCCESS_AVALIAR_ATENDIMENTO);
 		return modelAndView;
 	}
@@ -188,7 +190,7 @@ public class AtendimentoController {
 		if (request.getRequestURI().contains("odontograma")) {
 			modelAndView = new ModelAndView(REDIRECT_ODONTOGRAMA + atendimento.getPaciente().getId());
 		} else {
-			modelAndView = new ModelAndView(REDIRECT_DETALHES_ATENDIMENTO + atendimento.getId());
+			modelAndView = new ModelAndView(REDIRECT_DETALHES_ATENDIMENTO + GetAtendimentoId.getIdAtendimento(atendimento));
 			modelAndView.addObject("atendimento", atendimento);
 		}
 		attributes.addFlashAttribute(SUCCESS, SUCCESS_FINALIZAR_ATENDIMENTO);
@@ -198,7 +200,7 @@ public class AtendimentoController {
 	@PreAuthorize(PERMISSAO_PROFESSOR_VERIFICACAO_PROFESSOR)
 	@GetMapping("/validar/{id}")
 	public ModelAndView validarAtendimento(@PathVariable("id") Atendimento atendimento, RedirectAttributes attributes) {
-		ModelAndView modelAndView = new ModelAndView(REDIRECT_DETALHES_ATENDIMENTO + atendimento.getId());
+		ModelAndView modelAndView = new ModelAndView(REDIRECT_DETALHES_ATENDIMENTO + GetAtendimentoId.getIdAtendimento(atendimento));
 		atendimentoService.validarAtendimento(atendimento);
 		attributes.addFlashAttribute(SUCCESS, SUCCESS_VALIDAR_ATENDIMENTO);
 		return modelAndView;
@@ -209,7 +211,7 @@ public class AtendimentoController {
 //	public ModelAndView removerProcedimento(@PathVariable("idProcedimento") Procedimento procedimento,
 //			@PathVariable("idAtendimento") @Param("atendimento") Atendimento atendimento, Authentication auth,
 //			RedirectAttributes attributes) {
-//		ModelAndView modelAndView = new ModelAndView(REDIRECT_DETALHES_ATENDIMENTO + atendimento.getId());
+//		ModelAndView modelAndView = new ModelAndView(REDIRECT_DETALHES_ATENDIMENTO + GetAtendimentoId.getIdAtendimento(atendimento));
 //		procedimentoService.deletar(procedimento);
 //		attributes.addFlashAttribute(SUCCESS, SUCCESS_EXCLUIR_PROCEDIMENTO);
 //		return modelAndView;
@@ -220,7 +222,7 @@ public class AtendimentoController {
 //	public ModelAndView removerPatologia(@PathVariable("idPatologia") Patologia patologia,
 //			@PathVariable("idAtendimento") @Param("atendimento") Atendimento atendimento, Authentication auth,
 //			RedirectAttributes attributes) {
-//		ModelAndView modelAndView = new ModelAndView(REDIRECT_DETALHES_ATENDIMENTO + atendimento.getId());
+//		ModelAndView modelAndView = new ModelAndView(REDIRECT_DETALHES_ATENDIMENTO + GetAtendimentoId.getIdAtendimento(atendimento));
 //		patologiaService.deletar(patologia);
 //		attributes.addFlashAttribute(SUCCESS, SUCCESS_EXCLUIR_PATOLOGIA);
 //		return modelAndView;

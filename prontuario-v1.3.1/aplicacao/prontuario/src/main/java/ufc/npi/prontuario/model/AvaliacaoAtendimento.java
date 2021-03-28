@@ -101,15 +101,15 @@ public class AvaliacaoAtendimento {
 			itens.remove(item);
 		}
 	}
-
+//////////////////////////////////////////////////////////////////
 	public Double getMedia() {
 		String resultado = "0.0";
 		if (!this.itens.isEmpty()) {
 			Double notas = 0.0;
 			Double pesos = 0.0;
 			for (ItemAvaliacaoAtendimento item : this.itens) {
-				notas += item.getNota() * item.getItemAvaliacao().getPeso();
-				pesos += item.getItemAvaliacao().getPeso();
+				notas += calculoNotaPesoItem(item);
+				pesos += avaliacaoPesoItem(item);
 			}
 			resultado = new DecimalFormat("#.##").format(notas / pesos);
 		}
@@ -117,7 +117,16 @@ public class AvaliacaoAtendimento {
 		return Double.valueOf(resultado.replaceAll(",", "."));
 
 	}
-
+	
+	public Double calculoNotaPesoItem(ItemAvaliacaoAtendimento item) {
+		return item.getNota() * item.getPesoItemAvaliacao();
+	}
+	
+	public int avaliacaoPesoItem(ItemAvaliacaoAtendimento item) {
+		return item.getItemAvaliacao().getPeso();
+	}
+	
+////////////////////////////////////////////////////////////////////////
 	@Override
 	public int hashCode() {
 		final int prime = 31;

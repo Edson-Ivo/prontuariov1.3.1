@@ -17,7 +17,9 @@ import com.github.springtestdbunit.annotation.DatabaseTearDown;
 import ufc.npi.prontuario.exception.ProntuarioException;
 import ufc.npi.prontuario.model.Aluno;
 import ufc.npi.prontuario.model.Disciplina;
+import ufc.npi.prontuario.model.GetProfessorTurma;
 import ufc.npi.prontuario.model.Servidor;
+import ufc.npi.prontuario.model.SetUsuarioId;
 import ufc.npi.prontuario.model.Turma;
 
 @DatabaseSetup(TurmaServiceTest.DATASET)
@@ -75,11 +77,11 @@ public class TurmaServiceTest extends AbstractServiceTest{
 		Aluno aluno = new Aluno();
 		
 		//Busca de aluno matriculado em turmas
-		aluno.setId(1);
+		SetUsuarioId.setIdUsuario(aluno,1);
 		assertEquals(2, turmaService.buscarAtivasPorAluno(aluno).size());
 		
 		//Busca de aluno não matriculado em turmas
-		aluno.setId(4);
+		SetUsuarioId.setIdUsuario(aluno,4);
 		assertEquals(true, turmaService.buscarAtivasPorAluno(aluno).isEmpty());
 	}
 	
@@ -130,7 +132,7 @@ public class TurmaServiceTest extends AbstractServiceTest{
 		Aluno aluno = new Aluno();
 		
 		//Remover inscricao de aluno sem atendimentos realizados
-		aluno.setId(1);
+		SetUsuarioId.setIdUsuario(aluno,1);
 		try {
 			turmaService.removerInscricao(turma, aluno);
 		} catch (ProntuarioException e) {
@@ -138,7 +140,7 @@ public class TurmaServiceTest extends AbstractServiceTest{
 		}
 		
 		//Remover inscricao de aluno com atendimentos realizados
-		aluno.setId(3);
+		SetUsuarioId.setIdUsuario(aluno,3);
 		try {
 			turmaService.removerInscricao(turma, aluno);
 			fail("A inscrição do aluno não deveria ter sido removida");
@@ -154,20 +156,24 @@ public class TurmaServiceTest extends AbstractServiceTest{
 		professores.add(servidorService.buscarPorId(103));
 		
 		turmaService.adicionarProfessorTurma(turma, professores);
-		assertEquals(3, turma.getProfessores().size());
+		assertEquals(3, mostrarTurmaProfessores(turma).size());
 	}
 	
+	public List<Servidor> mostrarTurmaProfessores(Turma turma){
+		return GetProfessorTurma.mostrarTurmaProfessores(turma);
+	}
+
 	@Test
 	public void testBuscarProfessores(){
 		//Busca todos os professores que não lecionam na turma
 		Turma turma = turmaService.buscarPorId(2);
-		assertEquals(2, turmaService.buscarProfessores(turma.getProfessores()).size());
+		assertEquals(2, turmaService.buscarProfessores(mostrarTurmaProfessores(turma)).size());
 	}
 	
 	@Test
 	public void testbuscarTurmasProfessor(){
 		Servidor professor = new Servidor();
-		professor.setId(101);
+		SetUsuarioId.setIdUsuario(professor,101);
 		assertEquals(2, turmaService.buscarTurmasProfessor(professor).size());
 	}
 	

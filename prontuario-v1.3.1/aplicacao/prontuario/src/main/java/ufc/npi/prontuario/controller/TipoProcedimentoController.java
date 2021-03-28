@@ -44,7 +44,7 @@ public class TipoProcedimentoController {
 		modelAndView.addObject("procedimento", procedimento);
 		return modelAndView;
 	}
-
+/////////////////////////////////////////////////////////////////////////////////////////////
 	@PreAuthorize(PERMISSAO_ADMINISTRACAO)
 	@PostMapping(value = "/adicionar")
 	public ModelAndView adicionarTipoProcedimento(
@@ -53,12 +53,12 @@ public class TipoProcedimentoController {
 		ModelAndView modelAndView = new ModelAndView(REDIRECT_LISTAGEM_TIPOS_PROCEDIMENTO);
 		if(!result.hasErrors()){
 			try {
-				if(tipoProcedimento.getId() == null) {
+				if(ProcedimentoIdNull(tipoProcedimento)) {
 					tipoProcedimentoService.salvar(tipoProcedimento);
-					attributes.addFlashAttribute(SUCCESS, SUCCESS_SALVAR_TIPO_PROCEDIMENTO);
+					addFlashAttribute(attributes, SUCCESS, SUCCESS_SALVAR_TIPO_PROCEDIMENTO);
 				} else {
 					tipoProcedimentoService.atualizar(tipoProcedimento);
-					attributes.addFlashAttribute(SUCCESS, SUCCESS_EDITAR_TIPO_PROCEDIMENTO);
+					addFlashAttribute(attributes ,SUCCESS, SUCCESS_EDITAR_TIPO_PROCEDIMENTO);
 				}
 			} catch (ProntuarioException e) {
 				modelAndView.addObject("tiposProcedimento", tipoProcedimentoService.buscarTudo());
@@ -68,7 +68,15 @@ public class TipoProcedimentoController {
 		}
 		return modelAndView;
 	}
-
+	
+	public boolean ProcedimentoIdNull(TipoProcedimento tipoProcedimento) {
+		return tipoProcedimento.getId() == null;
+	}
+	
+	public void addFlashAttribute(RedirectAttributes attributes, String option1, String option2) {
+		attributes.addFlashAttribute(option1, option2);
+	}
+////////////////////////////////////////////////////////////////////////////////////////////////
 	@PreAuthorize(PERMISSAO_ADMINISTRACAO)
 	@GetMapping(value = "/remover/{id}")
 	public ModelAndView excluirTipoProcedimento(@PathVariable("id") TipoProcedimento tipoProcedimento, RedirectAttributes attributes) {

@@ -25,6 +25,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import ufc.npi.prontuario.exception.ProntuarioException;
 import ufc.npi.prontuario.model.Aluno;
+import ufc.npi.prontuario.model.GetMatriculaUsuario;
 import ufc.npi.prontuario.model.Odontograma;
 import ufc.npi.prontuario.model.Patologia;
 import ufc.npi.prontuario.model.TipoPatologia;
@@ -71,7 +72,7 @@ public class OdontogramaPatologiasController {
 
 		Usuario usuario = (Usuario) auth.getPrincipal();
 
-		Aluno aluno = alunoService.buscarPorMatricula(usuario.getMatricula());
+		Aluno aluno = alunoService.buscarPorMatricula(GetMatriculaUsuario.getUsuarioMatricula(usuario));
 
 		Map<String, Object> map = new HashMap<String, Object>();
 		List<Patologia> patologias = patologiaService.salvar(faceDente, patologiasId, local, idOdontograma, descricao,

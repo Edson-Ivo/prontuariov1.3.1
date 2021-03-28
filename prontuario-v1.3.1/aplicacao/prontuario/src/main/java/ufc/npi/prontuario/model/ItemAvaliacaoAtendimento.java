@@ -63,7 +63,11 @@ public class ItemAvaliacaoAtendimento {
 	public ItemAvaliacao getItemAvaliacao() {
 		return itemAvaliacao;
 	}
-
+////////////////////////////////////////////////////	
+	public int getPesoItemAvaliacao() {
+		return itemAvaliacao.getPeso();
+	}
+////////////////////////////////////////////////////	
 	public void setItemAvaliacao(ItemAvaliacao itemAvaliacao) {
 		this.itemAvaliacao = itemAvaliacao;
 	}

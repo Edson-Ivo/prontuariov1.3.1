@@ -170,12 +170,25 @@ public class Atendimento implements Comparable<Atendimento> {
 	public boolean isValidado() {
 		return status.equals(Status.VALIDADO);
 	}
-
+///////////////////////////////////////////////////////////
 	public boolean isVisivel(String email) {
-		return status.equals(Status.VALIDADO) || responsavel.getEmail().equals(email)
-				|| (ajudante != null && ajudante.getEmail().equals(email)) || professor.getEmail().equals(email);
+		boolean statusValidado = status.equals(Status.VALIDADO);
+		boolean responsavelEmail = compararEmailResponsavel(email);
+		
+		boolean ajudanteEmail = ajudanteIgualEmail(email);
+		boolean professorEmail = GetEmailUsuario.getUsuarioEmail(professor).equals(email);
+		
+		return statusValidado || responsavelEmail || ajudanteEmail || professorEmail;
 	}
-
+	
+	public boolean compararEmailResponsavel(String email) {
+		return GetEmailUsuario.getUsuarioEmail(responsavel).equals(email);
+	}
+	
+	public boolean ajudanteIgualEmail(String email) {
+		return (ajudante != null && GetEmailUsuario.getUsuarioEmail(ajudante).equals(email));
+	}
+//////////////////////////////////////////////////////////
 	@Override
 	public int hashCode() {
 		final int prime = 31;

@@ -16,6 +16,7 @@ import ufc.npi.prontuario.model.Atendimento;
 import ufc.npi.prontuario.model.Atendimento.Status;
 import ufc.npi.prontuario.model.Dente;
 import ufc.npi.prontuario.model.FaceDente;
+import ufc.npi.prontuario.model.GetUsuarioId;
 import ufc.npi.prontuario.model.Local;
 import ufc.npi.prontuario.model.Odontograma;
 import ufc.npi.prontuario.model.Papel;
@@ -51,7 +52,7 @@ public class PatologiaServiceImpl implements PatologiaService {
 
 	@Autowired
 	private ServidorRepository servidorRepository;
-
+////////////////////////////////////////////////////////////////////////////////////
 	public List<Patologia> salvar(String faceDente, List<Integer> idPatologias, String localString,
 			Integer idOdontograma, String descricao, Aluno aluno) throws ProntuarioException {
 		Odontograma odontograma = odontogramaPatologiaRepository.findOne(idOdontograma);
@@ -67,14 +68,7 @@ public class PatologiaServiceImpl implements PatologiaService {
 		Dente dente = null;
 		Local local = Local.valueOf(localString);
 
-		if (local == Local.FACE) {
-			face = FaceDente.valueOf(faceDente.substring(3));
-			dente = Dente.valueOf("D" + faceDente.substring(0, 2));
-		}
-
-		else if (local == Local.DENTE) {
-			dente = Dente.valueOf("D" + faceDente);
-		}
+		condicionalLocalFaceDente(face, local, dente, faceDente);
 
 		Patologia patologia = new Patologia(dente, face, local, descricao, new Date(), odontograma,
 				atendimentos.get(0));
@@ -83,6 +77,16 @@ public class PatologiaServiceImpl implements PatologiaService {
 
 		return patologias;
 	}
+	
+	public void condicionalLocalFaceDente(FaceDente face, Local local, Dente dente, String faceDente) {
+		if (local == Local.FACE) {
+			face = FaceDente.valueOf(faceDente.substring(3));
+			dente = Dente.valueOf("D" + faceDente.substring(0, 2));
+		}else if (local == Local.DENTE) {
+			dente = Dente.valueOf("D" + faceDente);
+		}
+	}
+	///////////////////////////////////////////////////////////////////////
 
 	private List<Patologia> setarTiposPatologias(List<Integer> idPatologias, Patologia patologia) {
 		List<Patologia> patologias = new ArrayList<Patologia>();
@@ -107,11 +111,11 @@ public class PatologiaServiceImpl implements PatologiaService {
 	public void tratar(Patologia patologia) {
 		patologiaRepository.saveAndFlush(patologia);
 	}
-
+/////////////////////////////////////////////////////////////////////////////////////////////////////
 	@Override
 	public List<Patologia> buscarPatologiasOdontograma(Odontograma odontograma, Usuario usuario) {
-		Aluno aluno = alunoRepository.findOne(usuario.getId());
-		Servidor servidor = servidorRepository.findOne(usuario.getId());
+		Aluno aluno = findOneAluno(alunoRepository, usuario);
+		Servidor servidor = findOneServidor(servidorRepository, usuario);
 
 		List<Patologia> patologias = new ArrayList<>();
 
@@ -123,16 +127,16 @@ public class PatologiaServiceImpl implements PatologiaService {
 					.findAllByOdontogramaAndAtendimentoResponsavelOrOdontogramaAndAtendimentoAjudante(odontograma,
 							aluno, odontograma, aluno);
 		} else if (servidor != null) {
-			patologias = patologiaRepository.findAllByOdontogramaAndAtendimentoProfessor(odontograma, servidor);
+			patologias = findAllByOdontogramaAndAtendimentoProfessor(patologiaRepository, odontograma, servidor);
 		}
-		if (usuario.getPapeis().contains(Papel.ADMINISTRACAO)) {
-			patologias = patologiaRepository.findAllByOdontograma(odontograma);
+		if (usuarioGetPapeis(usuario, Papel.ADMINISTRACAO)) {
+			patologias = findAllByOdontograma(patologiaRepository, odontograma);
 		}
 
 		// Se o usuário logado não fez parte do atendimento a lista está vazia,
 		// e são carregadas apenas as patologias validadas
-		if (patologias.isEmpty()) {
-			patologias = patologiaRepository.findAllByOdontogramaAndAtendimentoStatus(odontograma, Status.VALIDADO);
+		if (patologiaIsEmpty(patologias)) {
+			patologias = findAllByOdontogramaAndAtendimentoStatus(patologiaRepository, odontograma, Status.VALIDADO);
 
 			// Se o usuário logado faz parte do atendimento então a lista não
 			// está vazia e são adicionadas as patologias adicionadas
@@ -152,7 +156,38 @@ public class PatologiaServiceImpl implements PatologiaService {
 
 		return patologias;
 	}
-
+	
+	public Aluno findOneAluno(AlunoRepository alunoRepository, Usuario usuario) {
+		return alunoRepository.findOne(mostrarIdUsuario(usuario));
+	}
+	
+	public Integer mostrarIdUsuario(Usuario usuario) {
+		return GetUsuarioId.mostrarIdUsuario(usuario);
+	}
+	
+	public Servidor findOneServidor(ServidorRepository servidorRepository, Usuario usuario) {
+		return servidorRepository.findOne(mostrarIdUsuario(usuario));
+	}
+	public boolean usuarioGetPapeis(Usuario usuario, Papel papel) {
+		return usuario.getPapeis().contains(papel);
+	}
+	
+	public boolean patologiaIsEmpty(List<Patologia> patologias) {
+		return patologias.isEmpty();
+	}
+	
+	public List<Patologia> findAllByOdontograma(PatologiaRepository patologiaRepository, Odontograma odontograma){
+		return patologiaRepository.findAllByOdontograma(odontograma);
+	}
+	
+	public List<Patologia>findAllByOdontogramaAndAtendimentoProfessor(PatologiaRepository patologiaRepository, Odontograma odontograma, Servidor servidor){
+		return patologiaRepository.findAllByOdontogramaAndAtendimentoProfessor(odontograma, servidor);
+	}
+	
+	public List<Patologia>findAllByOdontogramaAndAtendimentoStatus(PatologiaRepository patologiaRepository, Odontograma odontograma, Status status){
+		return patologiaRepository.findAllByOdontogramaAndAtendimentoStatus(odontograma, status);
+	}
+////////////////////////////////////////////////////////////////////////////////////////////////
 	@Override
 	public List<Patologia> buscarPatologiasTratadas(Odontograma odontograma) {
 		return patologiaRepository.findByOdontogramaAndTratamentoIsNotNull(odontograma);

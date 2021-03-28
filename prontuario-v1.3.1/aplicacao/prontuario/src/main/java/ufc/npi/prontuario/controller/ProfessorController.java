@@ -23,6 +23,7 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import ufc.npi.prontuario.exception.ProntuarioException;
+import ufc.npi.prontuario.model.GetUsuarioId;
 import ufc.npi.prontuario.model.Servidor;
 import ufc.npi.prontuario.service.ServidorService;
 
@@ -38,20 +39,20 @@ public class ProfessorController {
 	public ModelAndView adicionarProfessor(Servidor professor, RedirectAttributes attributes) {
 		ModelAndView modelAndView = new ModelAndView(REDIRECT_LISTAGEM_PROFESSOR);
 		try {
-			if(professor.getId()!= null && professor.getPapeis().size() == 0){
+			if(GetUsuarioId.mostrarIdUsuario(professor)!= null && professor.getPapeis().size() == 0){
 				
 				modelAndView.setViewName(REDIRECT_FORMULARIO_CADASTRAR_PROFESSOR);
 				attributes.addFlashAttribute("servidor", professor);
 				attributes.addFlashAttribute(ERROR, ERRO_ADICIONAR_SERVIDOR_PAPEL);
 			}
 			
-			if(professor.getId()!= null && professor.getNome().replaceAll(" ", "").length() == 0){
+			if(GetUsuarioId.mostrarIdUsuario(professor)!= null && professor.getNome().replaceAll(" ", "").length() == 0){
 				modelAndView.setViewName(REDIRECT_FORMULARIO_CADASTRAR_PROFESSOR);
-				attributes.addFlashAttribute("servidor", servidorService.buscarPorId(professor.getId()));
+				attributes.addFlashAttribute("servidor", servidorService.buscarPorId(GetUsuarioId.mostrarIdUsuario(professor)));
 				attributes.addFlashAttribute(ERROR, ERRO_ADICIONAR_SERVIDOR_VAZIO);
 			}
 			
-			if(professor.getId() == null) {
+			if(GetUsuarioId.mostrarIdUsuario(professor) == null) {
 				servidorService.salvar(professor);
 				attributes.addFlashAttribute(SUCCESS, SUCCESS_CADASTRAR_SERVIDOR);
 			} else {
@@ -79,7 +80,7 @@ public class ProfessorController {
 	public ModelAndView excluirServidor(@PathVariable("id") Servidor servidor, RedirectAttributes attributes) {
 		
 		try {
-			servidorService.removerServidor(servidor.getId());
+			servidorService.removerServidor(GetUsuarioId.mostrarIdUsuario(servidor));
 			attributes.addFlashAttribute(SUCCESS, SUCCESS_EXCLUIR_SERVIDOR);
 		} catch (ProntuarioException e) {
 			attributes.addFlashAttribute(ERROR, e.getMessage());

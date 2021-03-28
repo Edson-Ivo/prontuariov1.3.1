@@ -21,6 +21,7 @@ import ufc.npi.prontuario.model.Aluno;
 import ufc.npi.prontuario.model.Atendimento;
 import ufc.npi.prontuario.model.Paciente;
 import ufc.npi.prontuario.model.Servidor;
+import ufc.npi.prontuario.model.SetUsuarioId;
 import ufc.npi.prontuario.model.Turma;
 
 @DatabaseSetup(AtendimentoServiceTest.DATASET)
@@ -38,7 +39,7 @@ public class AtendimentoServiceTest extends AbstractServiceTest {
 	@Test
 	public void buscarTudoPorAluno() {
 		Aluno responsavel = new Aluno();
-		responsavel.setId(2);
+		SetUsuarioId.setIdUsuario(responsavel,2);
 
 		List<Atendimento> atendimentos = atendimentoService.buscarTudoPorAluno(responsavel);
 
@@ -59,7 +60,7 @@ public class AtendimentoServiceTest extends AbstractServiceTest {
 		Aluno ajudante = alunoService.buscarPorId(3);
 
 		Servidor professor = new Servidor();
-		professor.setId(101);
+		SetUsuarioId.setIdUsuario(professor,101);
 
 		Date data = new Date();
 
@@ -92,7 +93,7 @@ public class AtendimentoServiceTest extends AbstractServiceTest {
 		Aluno ajudante = alunoService.buscarPorId(3);
 
 		Servidor professor = new Servidor();
-		professor.setId(101);
+		SetUsuarioId.setIdUsuario(professor,101);
 
 		Date data = new Date();
 
@@ -124,7 +125,7 @@ public class AtendimentoServiceTest extends AbstractServiceTest {
 		Aluno ajudante = alunoService.buscarPorId(3);
 
 		Servidor professor = new Servidor();
-		professor.setId(101);
+		SetUsuarioId.setIdUsuario(professor,101);
 
 		Date data = new Date();
 
@@ -156,7 +157,7 @@ public class AtendimentoServiceTest extends AbstractServiceTest {
 		Aluno ajudante = alunoService.buscarPorId(3);
 
 		Servidor professor = new Servidor();
-		professor.setId(101);
+		SetUsuarioId.setIdUsuario(professor,101);
 
 		Date data = new Date();
 

@@ -18,10 +18,10 @@ public class TipoPatologiaServiceImpl implements TipoPatologiaService {
 
     @Autowired
     private TipoPatologiaRepository tipoPatologiaRepository;
-
+///////////////////////////////////////
     @Override
     public void salvar(TipoPatologia tipoPatologia) throws ProntuarioException {
-        if (tipoPatologia.getNome().trim().isEmpty() || tipoPatologia.getDescricao().trim().isEmpty()) {
+        if (verificarTipoPatologiaNomeEDescricao(tipoPatologia)) {
             throw new ProntuarioException(ERRO_CAMPOS_OBRIGATORIOS);
         }
         if (tipoPatologiaRepository.findByNome(tipoPatologia.getNome()) != null) {
@@ -29,7 +29,11 @@ public class TipoPatologiaServiceImpl implements TipoPatologiaService {
         }
         tipoPatologiaRepository.save(tipoPatologia);
     }
-
+    
+    public boolean verificarTipoPatologiaNomeEDescricao(TipoPatologia tipoPatologia) {
+    	return (tipoPatologia.getNome().trim().isEmpty() || tipoPatologia.getDescricao().trim().isEmpty());
+    }
+////////////////////////////////////////////
     @Override
     public List<TipoPatologia> buscarTudo() {
         return tipoPatologiaRepository.findAll();
@@ -50,20 +54,36 @@ public class TipoPatologiaServiceImpl implements TipoPatologiaService {
         return tipoPatologiaRepository.findByNomeContainingIgnoreCase(nome);
     }
 
+    /////////////////////////////////////////////////////////////////////
     @Override
     public void atualizar(TipoPatologia tipoPatologia) throws ProntuarioException {
-        if (tipoPatologia.getId() == null || tipoPatologia.getNome().trim().isEmpty()) {
+        if (verificarTipoPatologia(tipoPatologia)) {
             throw new ProntuarioException(ExceptionSuccessConstants.ERRO_CAMPOS_OBRIGATORIOS);
         }
 
-        TipoPatologia tipoPatologiaExistente = tipoPatologiaRepository.findByNome(tipoPatologia.getNome());
-        if (tipoPatologiaExistente != null && !tipoPatologiaExistente.getId().equals(tipoPatologia.getId())) {
+        TipoPatologia tipoPatologiaExistente = buscarPorNomeTipoPatologia(tipoPatologia);
+        if (verificarTipoPatologiaExistente(tipoPatologiaExistente,tipoPatologia)) {
             throw new ProntuarioException(ExceptionSuccessConstants.ERRO_SALVAR_TIPO_PATOLOGIA_EXISTENTE);
         }
 
         tipoPatologiaRepository.save(tipoPatologia);
     }
-
+    
+    public TipoPatologia buscarPorNomeTipoPatologia(TipoPatologia tipoPatologia) {
+    	return tipoPatologiaRepository.findByNome(tipoPatologia.getNome());
+    }
+    
+    
+    public boolean verificarTipoPatologia(TipoPatologia tipoPatologia) {
+    	return tipoPatologia.getId() == null || tipoPatologia.getNome().trim().isEmpty();
+    }
+    
+    public boolean verificarTipoPatologiaExistente(TipoPatologia tipoPatologiaExistente,TipoPatologia tipoPatologia) {
+    	return tipoPatologiaExistente != null && !tipoPatologiaExistente.getId().equals(tipoPatologia.getId());
+    }
+    /////////////////////////////////////////////////////////////////////
+    
+    
 	@Override
 	public List<TipoPatologia> buscarPorIds(List<Integer> idTipos) {
 		List<TipoPatologia> tipos = new ArrayList<>();

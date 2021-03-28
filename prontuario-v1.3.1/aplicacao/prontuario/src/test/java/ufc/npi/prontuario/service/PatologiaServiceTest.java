@@ -16,6 +16,7 @@ import ufc.npi.prontuario.exception.ProntuarioException;
 import ufc.npi.prontuario.model.Aluno;
 import ufc.npi.prontuario.model.Odontograma;
 import ufc.npi.prontuario.model.Patologia;
+import ufc.npi.prontuario.model.SetUsuarioId;
 import ufc.npi.prontuario.model.Tratamento;
 
 @DatabaseSetup(PatologiaServiceTest.DATASET)
@@ -32,7 +33,7 @@ public class PatologiaServiceTest extends AbstractServiceTest{
 		Odontograma odontograma = new Odontograma();
 		odontograma.setId(1);
 		Aluno aluno = new Aluno();
-		aluno.setId(1);
+		SetUsuarioId.setIdUsuario(aluno,1);
 		assertEquals(2, patologiaService.buscarPatologiasOdontograma(odontograma, aluno).size());
 	}
 	
@@ -54,7 +55,7 @@ public class PatologiaServiceTest extends AbstractServiceTest{
 		idPatologias.add(1);
 		idPatologias.add(2);
 		Aluno aluno = new Aluno();
-		aluno.setId(1);
+		SetUsuarioId.setIdUsuario(aluno,1);
 		List<Patologia> patologias = patologiaService.salvar(faceDente, idPatologias, local, idOdontograma, descricao, aluno);
 		
 		Odontograma odontograma = new Odontograma();
@@ -67,7 +68,7 @@ public class PatologiaServiceTest extends AbstractServiceTest{
 		Odontograma odontograma = new Odontograma();
 		odontograma.setId(1);
 		Aluno aluno = new Aluno();
-		aluno.setId(1);
+		SetUsuarioId.setIdUsuario(aluno,1);
 		//Patologia patologia = patologiaService.buscarPatologiasOdontograma(odontograma, aluno).get(1);
 		Tratamento tratamento = new Tratamento();
 		tratamento.setId(1);

@@ -26,19 +26,21 @@ public class AnamneseServiceImpl implements AnamneseService {
 
 	@Autowired
 	PerguntaRepository perguntaRepository;
-
+	
+//////////////////////////////////////////////////////////////
 	@Override
 	public void salvar(Anamnese anamnese) throws ProntuarioException {
-		if (anamnese.getNome().trim().isEmpty() || anamnese.getDescricao().trim().isEmpty()) {
+		if (anamnese.verificarNomeDescricao()) {
 			throw new ProntuarioException(ERRO_CAMPOS_OBRIGATORIOS);
 		}
-		if (anamneseRepository.findByNome(anamnese.getNome()) != null) {
+		if (anamnese.findNameInRepository(anamneseRepository)) {
 			throw new ProntuarioException(ERROR_NOME_ANAMNESE);
 		}
 		anamnese.setStatus(Status.EM_ANDAMENTO);
 		anamneseRepository.save(anamnese);
 	}
-
+////////////////////////////////////////////////////////////
+	
 	@Override
 	public void salvarPergunta(Pergunta pergunta, Integer idAnamnese) {
 		Anamnese anamnese = addPerguntaEmAnamnese(pergunta, idAnamnese);
@@ -47,18 +49,29 @@ public class AnamneseServiceImpl implements AnamneseService {
 		}
 	}
 
+////////////////////////////////////////////////////////////
 	private Anamnese addPerguntaEmAnamnese(Pergunta pergunta, Integer idAnamnese) {
 		Anamnese anamnese = anamneseRepository.findOne(idAnamnese);
 
 		if (validarAnamnese(anamnese)) {
-			pergunta.setOrdem(ordemDaPergunta(anamnese.getPerguntas()));
-			pergunta.setAnamnese(anamnese);
+			setOrdemPergunta(pergunta, anamnese);
+			setPerguntaAnamnese(pergunta, anamnese);
 			anamnese.getPerguntas().add(pergunta);
 			return anamnese;
 		}
 		return null;
 	}
+	
+	public void setOrdemPergunta(Pergunta pergunta, Anamnese anamnese) {
+		pergunta.setOrdem(ordemDaPergunta(anamnese.getPerguntas()));
+	}
+	
+	public void setPerguntaAnamnese(Pergunta pergunta, Anamnese anamnese) {
+		pergunta.setAnamnese(anamnese);
+	}
 
+////////////////////////////////////////////////////////////
+	
 	private boolean validarAnamnese(Anamnese anamnese) {
 		return anamnese != null && anamnese.getStatus() != Status.FINALIZADA;
 	}
@@ -73,9 +86,9 @@ public class AnamneseServiceImpl implements AnamneseService {
 		
 		removerPerguntaDaAnamnese(anamnese, pergunta);
 	}
-	
+////////////////////////////////////////////////////////////	
 	private void removerPerguntaDaAnamnese(Anamnese anamnese, Pergunta pergunta) {
-		if (anamnese.getStatus() != Status.FINALIZADA) {
+		if (anamneseNaoFinalizada(anamnese)) {
 			List<Pergunta> perguntas = anamnese.getPerguntas();
 			
 			removerPerguntaDaLista(perguntas, pergunta);
@@ -84,6 +97,10 @@ public class AnamneseServiceImpl implements AnamneseService {
 		}
 	}
 	
+	public boolean anamneseNaoFinalizada(Anamnese anamnese) {
+		return anamnese.getStatus() != Status.FINALIZADA;
+	}
+////////////////////////////////////////////////////////////	
 	private void removerPerguntaDaLista(List<Pergunta> perguntas, Pergunta pergunta) {
 		int posicaoPergunta = perguntas.indexOf(pergunta);
 		

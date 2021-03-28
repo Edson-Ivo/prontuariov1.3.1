@@ -67,7 +67,11 @@ public class TurmaController {
 			return profTurmaController.formularioAdicionarTurma(turma);
 		}
 
-		return new ModelAndView(REDIRECT_DETALHES_TURMA + turma.getId());
+		return new ModelAndView(REDIRECT_DETALHES_TURMA + mostrarIdTurma(turma));
+	}
+
+	public Integer mostrarIdTurma(Turma turma) {
+		return turma.getId();
 	}
 
 	@PreAuthorize(PERMISSAO_ADMINISTRACAO)
@@ -75,7 +79,7 @@ public class TurmaController {
 	public ModelAndView excluirTurma(@PathVariable("idTurma") Turma turma, RedirectAttributes attributes) {
 		ModelAndView modelAndView = new ModelAndView(REDIRECT_LISTAGEM_TURMA);
 		try{
-			turmaService.removerTurma(turma.getId());
+			turmaService.removerTurma(mostrarIdTurma(turma));
 			attributes.addFlashAttribute(SUCCESS, SUCCESS_EXCLUIR_TURMA);
 		} catch(ProntuarioException e) {
 			attributes.addFlashAttribute(ERROR, e.getMessage());

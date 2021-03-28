@@ -17,6 +17,7 @@ import ufc.npi.prontuario.model.Atendimento;
 import ufc.npi.prontuario.model.Atendimento.Status;
 import ufc.npi.prontuario.model.Dente;
 import ufc.npi.prontuario.model.FaceDente;
+import ufc.npi.prontuario.model.GetUsuarioId;
 import ufc.npi.prontuario.model.Local;
 import ufc.npi.prontuario.model.Odontograma;
 import ufc.npi.prontuario.model.Patologia;
@@ -116,12 +117,8 @@ public class ProcedimentoServiceImpl implements ProcedimentoService {
 	private void salvarPatologias(List<Integer> patologias, Date data, String descricao, Aluno aluno) {
 
 		if (patologias != null && !patologias.isEmpty()) {
-
-			Tratamento tratamento = new Tratamento();
-			tratamento.setData(data);
-			tratamento.setDescricao(descricao);
-			tratamento.setResponsavel(aluno);
-
+//
+			Tratamento tratamento = new Tratamento(data,aluno,descricao);
 			for (Integer p : patologias) {
 				Patologia patologia = patologiaRepository.findOne(p);
 				tratamento.setPatologia(patologia);
@@ -184,15 +181,23 @@ public class ProcedimentoServiceImpl implements ProcedimentoService {
 		procedimento.getAtendimento().getProcedimentos().remove(procedimento);
 		procedimentoRepository.delete(procedimento);
 	}
+	
+	public Integer mostrarIdUsuario(Usuario usuario) {
+		return GetUsuarioId.mostrarIdUsuario(usuario);
+	}
 
 	@Override
 	public List<Procedimento> tabelaProcedimentosOdontograma(Odontograma odontograma, Authentication auth) {
 		Usuario usuario = (Usuario) auth.getPrincipal();
-		List<Procedimento> procedimentos = buscarProcedimentosOdontograma(odontograma, usuario.getId());
-		procedimentos.addAll(buscarProcedimentosExistentesOdontograma(odontograma, usuario.getId()));
-		procedimentos.sort((p1, p2) -> p1.getAtendimento().getData().compareTo(p1.getAtendimento().getData()));
+		
+		int idUsuario = mostrarIdUsuario(usuario);
+		
+		List<Procedimento> procedimentos = buscarProcedimentosOdontograma(odontograma, idUsuario);
+		procedimentos.addAll(buscarProcedimentosExistentesOdontograma(odontograma, idUsuario));
+		procedimentos.sort((p1, p2) -> p1.getDataAtendimento().compareTo(p2.getDataAtendimento()));
 		return procedimentos;
 	}
+
 	
 	private List<Procedimento> findProcedimentosByUsuario(Odontograma odontograma,	Integer idUsuarioLogado){
 		List<Procedimento> procedimentos = findProcedimentosByAluno(odontograma, idUsuarioLogado);

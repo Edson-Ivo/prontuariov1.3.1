@@ -17,6 +17,8 @@ import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
+import ufc.npi.prontuario.repository.TurmaRepository;
+
 @Entity
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {"ano", "semestre", "nome", "disciplina_id"}))
 public class Turma {
@@ -134,7 +136,11 @@ public class Turma {
 	public void setAtendimentos(List<Atendimento> atendimentos) {
 		this.atendimentos = atendimentos;
 	}
-
+	////////////////////////////////////////////////////////////////////////////////////
+	public boolean turmaExisteNoRepositorio(TurmaRepository turmaRepository) {
+		return turmaRepository.findByNomeAndAnoAndSemestreAndDisciplina(this.getNome(), this.getAno(), this.getSemestre(), this.getDisciplina()) != null;
+	}
+	//////////////////////////////////////////////////////////////////////////////////
 	@Override
 	public int hashCode() {
 		final int prime = 31;

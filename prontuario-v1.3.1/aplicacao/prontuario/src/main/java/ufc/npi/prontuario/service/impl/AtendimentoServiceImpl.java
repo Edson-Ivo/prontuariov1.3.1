@@ -18,6 +18,7 @@ import ufc.npi.prontuario.model.Atendimento;
 import ufc.npi.prontuario.model.Atendimento.Status;
 import ufc.npi.prontuario.model.Avaliacao;
 import ufc.npi.prontuario.model.AvaliacaoAtendimento;
+import ufc.npi.prontuario.model.GetAtendimentoId;
 import ufc.npi.prontuario.model.ItemAvaliacao;
 import ufc.npi.prontuario.model.ItemAvaliacaoAtendimento;
 import ufc.npi.prontuario.model.Paciente;
@@ -60,12 +61,11 @@ public class AtendimentoServiceImpl implements AtendimentoService {
 	public Atendimento buscarPorId(Integer id) {
 		return atendimentoRepository.findOne(id);
 	}
-
+//////////////////////////////////////////////////////
 	@Override
 	public void salvar(Atendimento atendimento) throws ProntuarioException {
-		List<Atendimento> atendimentos = atendimentoRepository.findAllByResponsavelOrAjudanteExist(
-				atendimento.getResponsavel(), atendimento.getAjudante(), atendimento.getPaciente(),
-				Status.EM_ANDAMENTO);
+		
+		List<Atendimento> atendimentos = buscarResponsavelOrAjustante(atendimento);
 
 		if (atendimentos.size() >= 1) {
 			throw new ProntuarioException(ERRO_ADICIONAR_ATENDIMENTO);
@@ -74,10 +74,30 @@ public class AtendimentoServiceImpl implements AtendimentoService {
 		atendimento.setStatus(Status.EM_ANDAMENTO);
 		atendimentoRepository.save(atendimento);
 	}
+	
+	public List<Atendimento> buscarResponsavelOrAjustante(Atendimento atendimento){
+		return atendimentoRepository.findAllByResponsavelOrAjudanteExist(
+				retornaAluno(atendimento), retornaAjudante(atendimento), retornaPaciente(atendimento),
+				Status.EM_ANDAMENTO);
+	}
+	
+	public Aluno retornaAluno(Atendimento atendimento) {
+		return atendimento.getResponsavel();
+	}
+	
+	public Aluno retornaAjudante(Atendimento atendimento) {
+		return atendimento.getAjudante();
+	}
+	
+	public Paciente retornaPaciente(Atendimento atendimento) {
+		return atendimento.getPaciente();
+	}
+	
+//////////////////////////////////////////////////////	
 
 	@Override
 	public void atualizar(Atendimento atendimento) throws ProntuarioException {
-		if (atendimentoRepository.exists(atendimento.getId())) {
+		if (atendimentoRepository.exists(GetAtendimentoId.getIdAtendimento(atendimento))) {
 			atendimentoRepository.save(atendimento);
 		} else {
 			throw new ProntuarioException(ERRO_EDITAR_ATENDIMENTO);
@@ -159,31 +179,63 @@ public class AtendimentoServiceImpl implements AtendimentoService {
 	@Override
 	public Atendimento adicionarItemAvaliacaoAtendimento(Integer item, Atendimento atendimento, String nota,
 			Integer avaliacao) {
-		Atendimento old = atendimentoRepository.findOne(atendimento.getId());
+		Atendimento old = getFindOneAtendimentoRepos(atendimento);
 		ItemAvaliacao itemOld = itemAvaliacaoRepository.findOne(item);
-		Avaliacao avaliacaoOld = avaliacaoRepository.findOne(avaliacao);
+		Avaliacao avaliacaoOld = getFindOneAvaliacaoRepository(avaliacao);
 
 		old.getAvaliacao().setAvaliacao(avaliacaoOld);
 
 		ItemAvaliacaoAtendimento avaliacaoAtendimento = new ItemAvaliacaoAtendimento(Double.valueOf(nota), itemOld);
-		old.getAvaliacao().addItem(avaliacaoAtendimento);
-		old.getAvaliacao().setData(new Date());
+		addItemAvaliacao(old,avaliacaoAtendimento);
+		addDataAvaliacao(old);
 		atendimentoRepository.save(old);
 
 		return old;
 	}
+	
+	public Atendimento getFindOneAtendimentoRepos(Atendimento atendimento) {
+		return atendimentoRepository.findOne(GetAtendimentoId.getIdAtendimento(atendimento));
+	}
+	
+	public ItemAvaliacao getFindOneItemAvaliacaoRepository(Integer item) {
+		return itemAvaliacaoRepository.findOne(item);
+	}
+	
+	public Avaliacao getFindOneAvaliacaoRepository(Integer avaliacao) {
+		return avaliacaoRepository.findOne(avaliacao);
+	}
+	
+	public void addItemAvaliacao(Atendimento old,ItemAvaliacaoAtendimento avaliacaoAtendimento) {
+		old.getAvaliacao().addItem(avaliacaoAtendimento);
+	}
+	public void addDataAvaliacao(Atendimento old) {
+		old.getAvaliacao().setData(new Date());
+	}
 
+//////////////////////////////////////////////////////////////////
 	@Override
 	public Atendimento adicionarObservacao(Atendimento atendimento, String observacao) {
-		Atendimento old = atendimentoRepository.findOne(atendimento.getId());
-		if (observacao != null && observacao.replace(" ", "").length() > 0) {
-			old.getAvaliacao().setObservacao(observacao);
-			old.getAvaliacao().setData(new Date());
+		Atendimento old = atendimentoRepository.findOne(GetAtendimentoId.getIdAtendimento(atendimento));
+		if (verificarObservacao(observacao)) {
+			inserirObservacao(old,observacao);
 		}
 		atendimentoRepository.save(old);
 
 		return old;
 	}
+	
+	public boolean verificarObservacao(String observacao) {
+		return observacao != null && observacao.replace(" ", "").length() > 0;	
+	}
+	
+	public void inserirObservacao(Atendimento old,String observacao) {
+		old.getAvaliacao().setObservacao(observacao);
+	}
+	
+	public void inserirData(Atendimento old) {
+		old.getAvaliacao().setData(new Date());
+	}
+/////////////////////////////////////////////////////////////////////	
 
 	public List<Atendimento> buscarAtendimentoPorPaciente(Paciente paciente) {
 		List<Atendimento> atendimentos = new ArrayList<>();
@@ -194,7 +246,7 @@ public class AtendimentoServiceImpl implements AtendimentoService {
 	@Override
 	public Atendimento reavaliarItem(Atendimento atendimento, String nota, Integer item) {
 
-		Atendimento old = atendimentoRepository.findOne(atendimento.getId());
+		Atendimento old = atendimentoRepository.findOne(GetAtendimentoId.getIdAtendimento(atendimento));
 		ItemAvaliacaoAtendimento itemOld = itemAvaliacaoAtendimentoRepository.findOne(item);
 
 		itemOld.setNota(Double.valueOf(nota));
@@ -203,38 +255,63 @@ public class AtendimentoServiceImpl implements AtendimentoService {
 
 		return old;
 	}
+///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	@Override
 	public List<Atendimento> buscarAtendimentosPorUsuario(Integer idUsuario, Paciente paciente) {
-		Aluno aluno = alunoRepository.findOne(idUsuario);
-		Servidor servidor = servidorRepository.findOne(idUsuario);
+		Aluno aluno = findOneAluno(idUsuario);
+		Servidor servidor = findOneServidor(idUsuario);
 
 		List<Atendimento> atendimentos = new ArrayList<>();
 		if (aluno != null) {
-			atendimentos = atendimentoRepository.findAllByResponsavelAndPacienteOrAjudanteAndPaciente(aluno, paciente,
-					aluno, paciente);
+			atendimentos = findAllByResponsavelAndPacienteOrAjudanteAndPaciente(aluno, paciente);
 		} else if (servidor != null) {
-			atendimentos = atendimentoRepository.findAllByProfessorAndPaciente(servidor, paciente);
+			atendimentos = findAllByProfessorAndPaciente(servidor, paciente);
 		}
 		if (servidor != null && servidor.getPapeis().contains(Papel.ADMINISTRACAO)) {
 			atendimentos = this.buscarAtendimentoPorPaciente(paciente);
 		}
 		if (atendimentos.isEmpty()) {
-			atendimentos = atendimentoRepository.findAllByStatusAndPaciente(Status.VALIDADO, paciente);
+			atendimentos = findAllByStatusAndPaciente(Status.VALIDADO, paciente);
 
 		} else {
 
 			List<Integer> idAtendimentos = new ArrayList<>();
 			for (Atendimento atendimento : atendimentos) {
-				idAtendimentos.add(atendimento.getId());
+				idAtendimentos.add(GetAtendimentoId.getIdAtendimento(atendimento));
 			}
 
-			atendimentos.addAll(atendimentoRepository.findAllByStatusAndPacienteAndIdIsNotIn(Status.VALIDADO, paciente,
+			atendimentos.addAll(findAllByStatusAndPacienteAndIdIsNotIn(Status.VALIDADO, paciente,
 					idAtendimentos));
 		}
 		Collections.sort(atendimentos);
 
 		return atendimentos;
 	}
+	
+	public Aluno findOneAluno(Integer idUsuario) {
+		return alunoRepository.findOne(idUsuario);
+	}
+	
+	public Servidor findOneServidor(Integer idUsuario) {
+		return servidorRepository.findOne(idUsuario);
+	}
+	
+	public List<Atendimento>findAllByResponsavelAndPacienteOrAjudanteAndPaciente(Aluno aluno, Paciente paciente){
+		return atendimentoRepository.findAllByResponsavelAndPacienteOrAjudanteAndPaciente(aluno, paciente, aluno, paciente);
+	}
+	
+	public List<Atendimento>findAllByProfessorAndPaciente(Servidor servidor, Paciente paciente){
+		return atendimentoRepository.findAllByProfessorAndPaciente(servidor, paciente);
+	}
+	
+	public List<Atendimento>findAllByStatusAndPaciente(Status status, Paciente paciente){
+		return atendimentoRepository.findAllByStatusAndPaciente(status, paciente);
+	}
+	
+	public List<Atendimento>findAllByStatusAndPacienteAndIdIsNotIn(Status status, Paciente paciente, List<Integer> idAtendimentos){
+		return atendimentoRepository.findAllByStatusAndPacienteAndIdIsNotIn(Status.VALIDADO, paciente, idAtendimentos);
+	}
+	/////////////////////////////////////////////////////////////////////////////////////////////////////
 
 }

@@ -21,6 +21,8 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import ufc.npi.prontuario.model.Anamnese;
+import ufc.npi.prontuario.model.GetMatriculaUsuario;
+import ufc.npi.prontuario.model.GetPacienteId;
 import ufc.npi.prontuario.model.Paciente;
 import ufc.npi.prontuario.model.PacienteAnamnese;
 import ufc.npi.prontuario.model.Usuario;
@@ -81,11 +83,11 @@ public class PacienteAnamneseController {
 
 		Usuario usuario = (Usuario) auth.getPrincipal();
 		
-		pacienteAnamnese.setResponsavel(alunoService.buscarPorMatricula(usuario.getMatricula()));
+		pacienteAnamnese.setResponsavel(alunoService.buscarPorMatricula(GetMatriculaUsuario.getUsuarioMatricula(usuario)));
 		pacienteService.adicionarAnamnese(paciente, pacienteAnamnese);
 
 		attributes.addFlashAttribute(SUCCESS, SUCCESS_REALIZAR_ANAMNESE);
 
-		return new ModelAndView("redirect:/paciente/" + paciente.getId() + "/anamneses");
+		return new ModelAndView("redirect:/paciente/" + GetPacienteId.mostrarIdPaciente(paciente) + "/anamneses");
 	}
 }

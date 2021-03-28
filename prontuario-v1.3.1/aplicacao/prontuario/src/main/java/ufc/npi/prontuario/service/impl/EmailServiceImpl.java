@@ -30,6 +30,7 @@ import org.thymeleaf.context.Context;
 
 import ufc.npi.prontuario.model.Atendimento;
 import ufc.npi.prontuario.model.Atendimento.Status;
+import ufc.npi.prontuario.model.GetEmailUsuario;
 import ufc.npi.prontuario.model.Token;
 import ufc.npi.prontuario.repository.AtendimentoRepository;
 import ufc.npi.prontuario.service.EmailService;
@@ -82,7 +83,7 @@ public class EmailServiceImpl implements EmailService {
 				final String conteudo = templateEngine.process(TEMPLATE_EMAIL_RECUPERACAO_SENHA, contexto);
 
 				try {
-					mensagem.setTo(token.getUsuario().getEmail());
+					mensagem.setTo(GetEmailUsuario.getUsuarioEmail(token.getUsuario()));
 					mensagem.setFrom(EMAIL_REMETENTE);
 					mensagem.setSubject(ASSUNTO_RECUPERACAO_SENHA);
 					mensagem.setText(conteudo, true);
@@ -97,13 +98,13 @@ public class EmailServiceImpl implements EmailService {
 		Thread thread = new Thread(email);
 		thread.start();
 	}
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
 	@Override
 	public void notificarAtendimentoAndamento() {
 		List<MimeMessage> emails = new ArrayList<>();
-		List<Atendimento> atendimentos = atendimentoRepository.findAllByStatus(Status.EM_ANDAMENTO);
+		List<Atendimento> atendimentos = findAllByStatus(atendimentoRepository);
 
-		if (!atendimentos.isEmpty()) {
+		if (atendimentoNotEmpty(atendimentos)) {
 			construirEmails(emails, atendimentos);
 
 			MimeMessage mimeMessage;
@@ -112,22 +113,22 @@ public class EmailServiceImpl implements EmailService {
 			String assuntoEmail = null;
 			String texto = null;
 			for (Atendimento a : atendimentos) {
-				mimeMessage = mailSender.createMimeMessage();
+				mimeMessage = createMimeMessage();
 				mensagem = new MimeMessageHelper(mimeMessage, "UTF-8");
 
-				destinatario = a.getResponsavel().getEmail();
+				destinatario = getResponsavelEmail(a);
 				assuntoEmail = ASSUNTO_ATENDIMENTO_ANDAMENTO;
-				texto = TEXTO_ATENDIMENTO_ANDAMENTO.replace(DATA, formatDate(a.getData()))
-						.replaceAll(TURMA, a.getTurma().getNome())
-						.replaceAll(DISCIPLINA, a.getTurma().getDisciplina().getNome());
+				texto = TEXTO_ATENDIMENTO_ANDAMENTO.replace(DATA, getAtendimentoData(a))
+						.replaceAll(TURMA, getNomeTurma(a))
+						.replaceAll(DISCIPLINA, getDisciplinaNome(a));
 
 				try {
-					mensagem.setTo(destinatario);
-					mensagem.setFrom(EMAIL_REMETENTE);
-					mensagem.setSubject(assuntoEmail);
-					mensagem.setText(texto, true);
-					emails.add(mimeMessage);
-				} catch (MessagingException e) {
+					setDestinatario(mensagem, destinatario);
+					setAssunto(mensagem, assuntoEmail);
+					setMensagem(mensagem, texto);
+					setFrom(mensagem);
+					addEmail(emails, mimeMessage);
+					} catch (MessagingException e) {
 					e.printStackTrace();
 					continue;
 				}
@@ -136,7 +137,75 @@ public class EmailServiceImpl implements EmailService {
 
 		enviarEmails(emails);
 	}
-
+	
+	public void addEmail(List<MimeMessage> emails, MimeMessage mimeMessage) {
+		emails.add(mimeMessage);
+	}
+	
+	public void setMensagem(MimeMessageHelper mensagem, String texto) throws MessagingException {
+		try {
+			mensagem.setText(texto, true);
+		} catch (MessagingException e) {
+			e.printStackTrace();
+			throw new MessagingException();
+		}
+	}
+	
+	public void setDestinatario(MimeMessageHelper mensagem, String destinatario) throws MessagingException {
+		try {
+			mensagem.setTo(destinatario);
+		} catch (MessagingException e) {
+			e.printStackTrace();
+			throw new MessagingException();
+		}
+	}
+	
+	public void setFrom(MimeMessageHelper mensagem) throws MessagingException {
+		try {
+			mensagem.setFrom(EMAIL_REMETENTE);
+		} catch (MessagingException e) {
+			e.printStackTrace();
+			throw new MessagingException();
+		}
+	}
+	
+	public void setAssunto(MimeMessageHelper mensagem, String assuntoEmail) throws MessagingException {
+		try {
+			mensagem.setSubject(assuntoEmail);
+		} catch (MessagingException e) {
+			e.printStackTrace();
+			throw new MessagingException();
+		}
+	}
+	
+	public List<Atendimento> findAllByStatus(AtendimentoRepository atendimentoRepository){
+		return atendimentoRepository.findAllByStatus(Status.EM_ANDAMENTO);
+	}
+	
+	public boolean atendimentoNotEmpty(List<Atendimento> atendimentos) {
+		return !atendimentos.isEmpty();
+	}
+	
+	public MimeMessage createMimeMessage() {
+		return mailSender.createMimeMessage();
+	}
+	
+	public String getResponsavelEmail (Atendimento a){
+		return GetEmailUsuario.getUsuarioEmail(a.getResponsavel());
+	}
+	
+	public String getAtendimentoData(Atendimento a) {
+		return formatDate(a.getData());
+	}
+	
+	public String getNomeTurma(Atendimento a) {
+		return a.getTurma().getNome();
+	}
+	
+	public String getDisciplinaNome(Atendimento a) {
+		return a.getTurma().getDisciplina().getNome();
+	}
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	private void construirEmails(List<MimeMessage> emails, List<Atendimento> atendimentos) {
 		MimeMessage mimeMessage;
 		MimeMessageHelper mensagem;
@@ -148,7 +217,7 @@ public class EmailServiceImpl implements EmailService {
 			mimeMessage = mailSender.createMimeMessage();
 			mensagem = new MimeMessageHelper(mimeMessage, "UTF-8");
 
-			destinatario = a.getResponsavel().getEmail();
+			destinatario = GetEmailUsuario.getUsuarioEmail(a.getResponsavel());
 			assuntoEmail = ASSUNTO_ATENDIMENTO_ANDAMENTO;
 			texto = gerarTextoMensagem(a);
 
@@ -200,7 +269,7 @@ public class EmailServiceImpl implements EmailService {
 	private void criarMensagemAtendimento(MimeMessage mimeMessage, Atendimento atendimento) throws MessagingException {
 		MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, "UTF-8");
 
-		String destinatario = atendimento.getProfessor().getEmail();
+		String destinatario = GetEmailUsuario.getUsuarioEmail(atendimento.getProfessor());
 		String assunto = ASSUNTO_ATENDIMENTO_AVALIACAO;
 		String texto = TEXTO_ATENDIMENTO_AVALIACAO.replace(DATA, formatDate(atendimento.getData()))
 				.replaceAll(TURMA, atendimento.getTurma().getNome())

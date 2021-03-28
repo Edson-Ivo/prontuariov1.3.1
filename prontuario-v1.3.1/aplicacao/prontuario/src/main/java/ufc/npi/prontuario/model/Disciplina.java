@@ -55,7 +55,14 @@ public class Disciplina {
 	public void setTurmas(List<Turma> turmas) {
 		this.turmas = turmas;
 	}
-
+	///////////////////////////////////////////////////
+	public boolean verificarCamposObrigatorios() {
+		boolean nullID = this.getId() == null;
+		boolean emptyNome = this.getNome().trim().isEmpty();
+		boolean emptyCodigo = this.getCodigo().trim().isEmpty();
+		return nullID || emptyNome || emptyCodigo;	
+	}
+/////////////////////////////////////////////////////////////
 	@Override
 	public int hashCode() {
 		final int prime = 31;

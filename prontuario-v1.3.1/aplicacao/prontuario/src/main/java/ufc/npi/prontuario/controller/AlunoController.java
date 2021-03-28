@@ -25,6 +25,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import ufc.npi.prontuario.exception.ProntuarioException;
 import ufc.npi.prontuario.model.Aluno;
+import ufc.npi.prontuario.model.GetUsuarioId;
 import ufc.npi.prontuario.service.AlunoService;
 import ufc.npi.prontuario.service.AtendimentoService;
 
@@ -62,7 +63,7 @@ public class AlunoController {
 	}
 
 	private void salvarOuAtualizarAluno(Aluno aluno, RedirectAttributes attributes) throws ProntuarioException {
-		if (aluno.getId() == null) {
+		if (GetUsuarioId.mostrarIdUsuario(aluno) == null) {
 			alunoService.salvar(aluno);
 			attributes.addFlashAttribute(SUCCESS, SUCCESS_CADASTRAR_ALUNO);
 		} else {
@@ -75,7 +76,7 @@ public class AlunoController {
 	@GetMapping(value = "/remover/{idAluno}")
 	public ModelAndView excluirAluno(@PathVariable("idAluno") Aluno aluno, RedirectAttributes attributes) {
 		try {
-			alunoService.removerAluno(aluno.getId());
+			alunoService.removerAluno(GetUsuarioId.mostrarIdUsuario(aluno));
 			attributes.addFlashAttribute(SUCCESS, SUCCESS_EXCLUIR_ALUNO);
 		} catch (ProntuarioException e) {
 			attributes.addFlashAttribute(ERROR, e.getMessage());

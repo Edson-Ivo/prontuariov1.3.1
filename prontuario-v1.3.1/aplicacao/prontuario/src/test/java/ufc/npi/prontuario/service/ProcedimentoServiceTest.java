@@ -13,6 +13,7 @@ import com.github.springtestdbunit.annotation.DatabaseTearDown;
 
 import ufc.npi.prontuario.model.Aluno;
 import ufc.npi.prontuario.model.Procedimento;
+import ufc.npi.prontuario.model.SetUsuarioId;
 
 @DatabaseSetup(ProcedimentoServiceTest.DATASET)
 @DatabaseTearDown(type = DatabaseOperation.DELETE_ALL, value = {ProcedimentoServiceTest.DATASET})
@@ -23,7 +24,7 @@ public class ProcedimentoServiceTest extends AbstractServiceTest{
 	@Test
 	public void testSalvar() {
 		Aluno aluno = new Aluno();
-		aluno.setId(1);
+		SetUsuarioId.setIdUsuario(aluno,1);
 		List<Integer> idProcedimentos = new ArrayList<Integer>();
 		idProcedimentos.add(1);
 		idProcedimentos.add(2);

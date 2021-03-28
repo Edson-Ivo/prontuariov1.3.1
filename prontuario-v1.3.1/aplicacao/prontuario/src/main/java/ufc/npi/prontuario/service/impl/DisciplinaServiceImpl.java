@@ -19,18 +19,31 @@ public class DisciplinaServiceImpl implements DisciplinaService {
 
 	@Autowired
 	private DisciplinaRepository disciplinaRepository;
-
+	
+	/////////////////////////////////////////////
 	@Override
 	public void salvar(Disciplina disciplina) throws ProntuarioException {
-		if(disciplina.getNome().trim().isEmpty() || disciplina.getCodigo().trim().isEmpty()) {
+		if(verificarDiciplinaNomeECod(disciplina)) {
 			throw new ProntuarioException(ERRO_CAMPOS_OBRIGATORIOS);
 		}
-		if(disciplinaRepository.findByNome(disciplina.getNome()) != null || disciplinaRepository.findByCodigo(disciplina.getCodigo()) != null) {
+		if(verificarDisciplinaRepoFindNomeECodigo(disciplina)) {
 			throw new ProntuarioException(ERRO_SALVAR_DISCIPLINA_EXISTENTE);
 		}
 		disciplinaRepository.save(disciplina);
 	}
+	
+	
+	public boolean verificarDisciplinaRepoFindNomeECodigo(Disciplina disciplina) {
+		
+		return disciplinaRepository.findByNome(disciplina.getNome()) != null || disciplinaRepository.findByCodigo(disciplina.getCodigo()) != null;
+		
+	}
+		
+	public boolean verificarDiciplinaNomeECod(Disciplina disciplina){
+		return (disciplina.getNome().trim().isEmpty() || disciplina.getCodigo().trim().isEmpty());
+	}
 
+	//////////////////////////////////////////////
 	@Override
 	public List<Disciplina> buscarTudo() {
 		return disciplinaRepository.findAllByOrderByNome();
@@ -52,20 +65,25 @@ public class DisciplinaServiceImpl implements DisciplinaService {
 			throw new ProntuarioException(ERRO_EXCLUIR_DISCIPLINA);
 		}
 	}
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////
 	@Override
 	public void atualizar(Disciplina disciplina) throws ProntuarioException {
-		if(disciplina.getId() == null || disciplina.getNome().trim().isEmpty() || disciplina.getCodigo().trim().isEmpty()) {
+		if(disciplina.verificarCamposObrigatorios()) {
 			throw new ProntuarioException(ERRO_CAMPOS_OBRIGATORIOS);
 		}
 		Disciplina discExistente = disciplinaRepository.findByNome(disciplina.getNome());
-		if(discExistente != null && !discExistente.getId().equals(disciplina.getId())) {
+		if(verificarExistenciaDisciplina(discExistente, disciplina)) {
 			throw new ProntuarioException(ERRO_SALVAR_DISCIPLINA_EXISTENTE);
 		}
 		discExistente = disciplinaRepository.findByCodigo(disciplina.getCodigo());
-		if(discExistente != null && !discExistente.getId().equals(disciplina.getId())) {
+		if(verificarExistenciaDisciplina(discExistente, disciplina)) {
 			throw new ProntuarioException(ERRO_SALVAR_DISCIPLINA_EXISTENTE);
 		}
 		disciplinaRepository.save(disciplina);
 	}
+	
+	public boolean verificarExistenciaDisciplina(Disciplina discExistente, Disciplina disciplina) {
+		return discExistente != null && !discExistente.getId().equals(disciplina.getId());
+	}
+	/////////////////////////////////////////////////////////////////////////////////////////////////
 }

@@ -51,7 +51,13 @@ public class AlunoTurma {
 		result = prime * result + ((turma == null) ? 0 : turma.hashCode());
 		return result;
 	}
-
+////////////////////////////////////////////////////////////////////////////////
+    public void setInscricao(Aluno aluno, Turma turma, Boolean ativo) {
+		this.setAluno(aluno);
+		this.setTurma(turma);
+		this.setAtivo(ativo);
+	}
+///////////////////////////////////////////////////////////////////////////////
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)

@@ -18,6 +18,7 @@ import ufc.npi.prontuario.exception.ProntuarioException;
 import ufc.npi.prontuario.model.Documento;
 import ufc.npi.prontuario.model.Documento.TipoDocumento;
 import ufc.npi.prontuario.model.DocumentoDownload;
+import ufc.npi.prontuario.model.GetPacienteId;
 import ufc.npi.prontuario.model.Paciente;
 import ufc.npi.prontuario.repository.DocumentoRepository;
 import ufc.npi.prontuario.repository.PacienteRepository;
@@ -34,24 +35,23 @@ public class DocumentoServiceImpl implements DocumentoService {
 
 	@Autowired
 	private PacienteRepository pacienteRepository;
-
+////////////////////////////////////////////////////////////////
 	@Override
 	public void salvar(Paciente paciente, MultipartFile[] files) throws ProntuarioException {
 		for (MultipartFile file : files) {
-			if (file != null && !(file.getOriginalFilename().toString().equals(""))) {
+			if (verificarFile(file)) {
 				Documento documento = new Documento();
 				try {
-					documento.setNome(file.getOriginalFilename());
-					documento.setArquivo(file.getBytes());
-					documento.setCaminho(DOCUMENTOS_PRONTUARIO + paciente.getId() + "/" + documento.getNome());
+					documento.setNomeArqCam(getOriginalFilename(file),returnBytesDoc(file),getCaminhoFile(file,paciente));
+			
 
 					// pega o fomato do arquivo
-					int i = documento.getNome().lastIndexOf('.');
-					String extensao = documento.getNome().substring(i + 1);
-					documento.setTipo(TipoDocumento.valueOf(extensao.toUpperCase()));
+					int i = returnLastIndexNomeDoc(documento);
+					String extensao = returnSubstringNomeDoc(documento,i);
+					documento.setTipo(TipoDocumento.valueOf(returnExtensaoUpperCase(extensao)));
 
 					for (Documento doc : paciente.getDocumentos()) {
-						if (documento.getCaminho().equals(doc.getCaminho())) {
+						if (compararDoc(documento,doc)) {
 							throw new ProntuarioException(ERRO_ARQUIVO_EXISTENTE);
 						}
 					}
@@ -61,11 +61,43 @@ public class DocumentoServiceImpl implements DocumentoService {
 				} catch (IOException e) {
 					throw new ProntuarioException(ERRO_SALVAR_ARQUIVO);
 				}
-				salvarArquivoLocal(documento, paciente.getId());
+				salvarArquivoLocal(documento, GetPacienteId.mostrarIdPaciente(paciente));
 			}
 		}
 	}
-
+	
+	public String returnExtensaoUpperCase(String extensao) {
+		return extensao.toUpperCase();
+	}
+	
+	public String getOriginalFilename(MultipartFile file) {
+		return file.getOriginalFilename();
+	}
+	
+	public byte[] returnBytesDoc(MultipartFile file) throws IOException {
+		return file.getBytes();
+	}
+	
+	public String getCaminhoFile(MultipartFile file,Paciente paciente) {
+		return DOCUMENTOS_PRONTUARIO + GetPacienteId.mostrarIdPaciente(paciente) + "/" + getOriginalFilename(file);
+	}
+	
+	public boolean compararDoc(Documento documento,Documento doc) {
+		return documento.getCaminho().equals(doc.getCaminho());
+	}
+	
+	public int returnLastIndexNomeDoc(Documento documento) {
+		return documento.getNome().lastIndexOf('.');
+	}
+	
+	public String returnSubstringNomeDoc(Documento documento,int i) {
+		return documento.getNome().substring(i + 1);
+	}
+	
+	public boolean verificarFile(MultipartFile file) {
+		return file != null && !(file.getOriginalFilename().toString().equals(""));
+	}
+///////////////////////////////////////////////////////////////////
 	private void salvarArquivoLocal(Documento documento, Integer idPaciente) throws ProntuarioException {
 		String caminhoDiretorio = DOCUMENTOS_PRONTUARIO + idPaciente;
 
@@ -123,16 +155,25 @@ public class DocumentoServiceImpl implements DocumentoService {
 		
 		return new DocumentoDownload(documento.getArquivo(), documento.getNome(), procedimento, extensao);
 	}
-
+/////////////////////////////////////////////////////////////////////////
 	private String getExtensaoDocumento(Documento documento) {
 		String extensao = "";
 
-		if(documento.getTipo().equals(TipoDocumento.PDF)) {
-			extensao = "application/" + documento.getTipo().getDescricao();
+		if(documentoPDF(documento)) {
+			extensao = "application/" + getDocumentoDescricao(documento);
 		} else {
-			extensao = "image/" + documento.getTipo().getDescricao();
+			extensao = "image/" + getDocumentoDescricao(documento);
 		}
 
 		return extensao;
 	}
+	
+	public String getDocumentoDescricao(Documento documento) {
+		return documento.getTipo().getDescricao();
+	}
+	
+	public boolean documentoPDF(Documento documento) {
+		return documento.getTipo().equals(TipoDocumento.PDF);
+	}
+	///////////////////////////////////////////////////////////////////
 }

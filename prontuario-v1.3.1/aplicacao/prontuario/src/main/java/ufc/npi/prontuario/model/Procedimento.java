@@ -1,5 +1,7 @@
 package ufc.npi.prontuario.model;
 
+import java.util.Date;
+
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -106,7 +108,11 @@ public class Procedimento implements Comparable<Procedimento> {
 	public Atendimento getAtendimento() {
 		return atendimento;
 	}
-
+////////////////////////////////
+	public Date getDataAtendimento() {
+		return atendimento.getData();
+	}
+////////////////////////////////
 	public void setAtendimento(Atendimento atendimento) {
 		this.atendimento = atendimento;
 	}

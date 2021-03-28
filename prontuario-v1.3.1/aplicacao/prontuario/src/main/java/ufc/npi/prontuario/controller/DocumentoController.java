@@ -21,6 +21,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import ufc.npi.prontuario.exception.ProntuarioException;
 import ufc.npi.prontuario.model.Documento;
+import ufc.npi.prontuario.model.GetPacienteId;
 import ufc.npi.prontuario.model.Paciente;
 import ufc.npi.prontuario.service.DocumentoService;
 
@@ -43,7 +44,7 @@ public class DocumentoController {
 			}
 		}
 		
-		return new ModelAndView(REDIRECT_LISTAGEM_DOCUMENTOS + paciente.getId());
+		return new ModelAndView(REDIRECT_LISTAGEM_DOCUMENTOS + GetPacienteId.mostrarIdPaciente(paciente));
 	}
 	
 	@GetMapping("/paciente/{id}")
@@ -80,6 +81,6 @@ public class DocumentoController {
 			RedirectAttributes attributes) {
 		documentoService.deletar(documento, paciente);
 		attributes.addFlashAttribute(SUCCESS, SUCCESS_EXCLUIR_DOCUMENTO);
-		return new ModelAndView(REDIRECT_LISTAGEM_DOCUMENTOS + paciente.getId());
+		return new ModelAndView(REDIRECT_LISTAGEM_DOCUMENTOS + GetPacienteId.mostrarIdPaciente(paciente));
 	}
 }

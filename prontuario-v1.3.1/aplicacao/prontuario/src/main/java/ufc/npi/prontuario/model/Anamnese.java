@@ -16,6 +16,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.validation.constraints.NotNull;
 
+import ufc.npi.prontuario.repository.AnamneseRepository;
+
 @Entity
 public class Anamnese {
 
@@ -101,7 +103,15 @@ public class Anamnese {
 
 		this.perguntas.add(pergunta);
 	}
-
+	
+	public boolean verificarNomeDescricao() {
+		return this.getNome().trim().isEmpty() || this.getDescricao().trim().isEmpty();
+	}
+////////////////////////////////////////////////////////////
+	public boolean findNameInRepository(AnamneseRepository anamneseRepository) {
+		return anamneseRepository.findByNome(this.getNome()) != null;
+	}
+////////////////////////////////////////////////////////////
 	@Override
 	public int hashCode() {
 		final int prime = 31;

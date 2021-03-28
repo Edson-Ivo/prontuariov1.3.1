@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import ufc.npi.prontuario.exception.ProntuarioException;
+import ufc.npi.prontuario.model.GetPacienteId;
 import ufc.npi.prontuario.model.Odontograma;
 import ufc.npi.prontuario.model.Paciente;
 import ufc.npi.prontuario.model.PacienteAnamnese;
@@ -20,33 +21,36 @@ public class PacienteServiceImpl implements PacienteService {
 
 	@Autowired
 	private PacienteRepository pacienteRepository;
-
-	@Override
-	public void salvar(Paciente paciente) throws ProntuarioException {
-		inicializarOdontogramaPaciente(paciente);
-
-		verificarCpfDuplicado(paciente);
-
-		verificarCnsDuplicado(paciente);
-
+////////////////////////////////////////////////////////////////////
     @Override
     public void salvar(Paciente paciente) throws ProntuarioException {
-        if (paciente.getId() == null) {
+        if (pacienteIdNull(paciente)) {
             criarOdontogramaEmPaciente(paciente);
         }
 
-        if (!paciente.getCpf().isEmpty()) {
+        if (!pacienteCpfVazio(paciente)) {
             verificarSePacienteTemCPF(paciente);
         }
 
-        if (!paciente.getCns().isEmpty()) {
+        if (!pacienteCnsNull(paciente)) {
             verificarSePacienteTemCNS(paciente);
         }
 		pacienteRepository.save(paciente);
 	}
-
+    
+    public boolean pacienteIdNull(Paciente paciente) {
+    	return GetPacienteId.mostrarIdPaciente(paciente) == null;
+    }
+    
+    public boolean pacienteCpfVazio(Paciente paciente) {
+    	return paciente.getCpf().isEmpty();
+    }
+    public boolean pacienteCnsNull(Paciente paciente) {
+    	return paciente.getCns().isEmpty();
+    }
+////////////////////////////////////////////////////////////////////
 	private void inicializarOdontogramaPaciente(Paciente paciente) {
-		if (paciente.getId() == null) {
+		if (GetPacienteId.mostrarIdPaciente(paciente) == null) {
 			paciente.setOdontograma(new Odontograma());
 		}
 	}

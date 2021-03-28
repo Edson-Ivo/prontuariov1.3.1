@@ -39,6 +39,10 @@ public class TurmaAlunoController {
 			attributes.addFlashAttribute(ERROR, e.getMessage());
 		}
 		
-		return new ModelAndView(REDIRECT_DETALHES_TURMA + turma.getId());
+		return new ModelAndView(REDIRECT_DETALHES_TURMA + mostrarIdTurma(turma));
+	}
+
+	public Integer mostrarIdTurma(Turma turma) {
+		return turma.getId();
 	}
 }

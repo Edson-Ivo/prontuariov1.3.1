@@ -9,6 +9,8 @@ import static ufc.npi.prontuario.util.FragmentsConstants.FRAGMENT_PROFESSORES;
 import static ufc.npi.prontuario.util.PagesConstants.FORMULARIO_ADICIONAR_TURMA;
 import static ufc.npi.prontuario.util.RedirectConstants.REDIRECT_DETALHES_TURMA;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -22,6 +24,7 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import ufc.npi.prontuario.exception.ProntuarioException;
+import ufc.npi.prontuario.model.GetProfessorTurma;
 import ufc.npi.prontuario.model.Servidor;
 import ufc.npi.prontuario.model.Turma;
 import ufc.npi.prontuario.service.DisciplinaService;
@@ -55,18 +58,25 @@ public class ProfessorTurmaController {
 	public ModelAndView adicionarProfessor(@PathVariable("idTurma") Turma turma, 
 			@ModelAttribute("novosProfessores") Turma novosProfessores, RedirectAttributes attributes){
 		
-		if(novosProfessores.getProfessores() != null && !novosProfessores.getProfessores().isEmpty()){
-			turmaService.adicionarProfessorTurma(turma, novosProfessores.getProfessores());
+		if(mostrarTurmaProfessores(novosProfessores) != null && !mostrarTurmaProfessores(novosProfessores).isEmpty()){
+			turmaService.adicionarProfessorTurma(turma, mostrarTurmaProfessores(novosProfessores));
 			attributes.addFlashAttribute(SUCCESS, SUCCESS_VINCULAR_PROFESSOR);
 		}
 		
-		return new ModelAndView(REDIRECT_DETALHES_TURMA + turma.getId());
+		return new ModelAndView(REDIRECT_DETALHES_TURMA + mostrarIdTurma(turma));
+	}
+	public Integer mostrarIdTurma(Turma turma) {
+		return turma.getId();
+	}
+
+	public List<Servidor> mostrarTurmaProfessores(Turma turma){
+		return GetProfessorTurma.mostrarTurmaProfessores(turma);
 	}
 	
 	@GetMapping("/professores/")
 	public ModelAndView carregarProfessores(@RequestParam("idTurma") Turma turma ) {
 		ModelAndView modelAndView = new ModelAndView(FRAGMENT_PROFESSORES);
-		modelAndView.addObject("professores", turma != null ? turma.getProfessores() : null);
+		modelAndView.addObject("professores", turma != null ? mostrarTurmaProfessores(turma) : null);
 		return modelAndView;
 	}
 	
@@ -82,6 +92,6 @@ public class ProfessorTurmaController {
 			attributes.addFlashAttribute(ERROR, e.getMessage());
 		}
 		
-		return new ModelAndView(REDIRECT_DETALHES_TURMA + turma.getId());
+		return new ModelAndView(REDIRECT_DETALHES_TURMA + mostrarIdTurma(turma));
 	}
 }

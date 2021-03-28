@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import ufc.npi.prontuario.exception.ProntuarioException;
 import ufc.npi.prontuario.model.Token;
 import ufc.npi.prontuario.model.Usuario;
+import ufc.npi.prontuario.model.SetSenhaUsuario;
 import ufc.npi.prontuario.repository.UsuarioRepository;
 import ufc.npi.prontuario.service.TokenService;
 import ufc.npi.prontuario.service.UsuarioService;
@@ -32,7 +33,7 @@ public class UsuarioServiceImpl implements UsuarioService {
 		Usuario aux = usuarioRepository.findOne(usuarioId);
 
 		if (new BCryptPasswordEncoder().matches(senhaAtual, aux.getSenha())) {
-			aux.setSenha(novaSenha);
+			SetSenhaUsuario.setUsuarioSenha(aux,novaSenha);
 			aux.encodePassword();
 		} else {
 			throw new ProntuarioException(ERRO_ALTERAR_SENHA);
@@ -60,7 +61,7 @@ public class UsuarioServiceImpl implements UsuarioService {
 	public void novaSenha(Token token, String senha) {
 		if (token != null) {
 			Usuario usuario = token.getUsuario();
-			usuario.setSenha(senha);
+			SetSenhaUsuario.setUsuarioSenha(usuario,senha);
 			usuario.encodePassword();
 
 			usuarioRepository.save(usuario);

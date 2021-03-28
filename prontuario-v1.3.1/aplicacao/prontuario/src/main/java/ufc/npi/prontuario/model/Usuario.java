@@ -64,7 +64,7 @@ public abstract class Usuario implements UserDetails {
 		this.papeis = papeis;
 	}
 
-	public Integer getId() {
+	public Integer getId() { 
 		return id;
 	}
 
@@ -132,6 +132,10 @@ public abstract class Usuario implements UserDetails {
 		return result;
 	}
 
+	public Integer mostrarIdUsuario(Usuario usuario) {
+		return  GetUsuarioId.mostrarIdUsuario(usuario);
+	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -142,7 +146,7 @@ public abstract class Usuario implements UserDetails {
 			return false;
 		Usuario other = (Usuario) obj;
 		if (id == null) {
-			if (other.id != null)
+			if (mostrarIdUsuario(other) != null)
 				return false;
 		} else if (!id.equals(other.id))
 			return false;

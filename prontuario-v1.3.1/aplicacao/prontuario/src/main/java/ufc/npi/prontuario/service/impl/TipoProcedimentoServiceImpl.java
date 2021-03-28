@@ -19,10 +19,10 @@ public class TipoProcedimentoServiceImpl implements TipoProcedimentoService{
 	@Autowired
 	private TipoProcedimentoRepository tipoProcedimentoRepository;
 
-	
+/////////////////////////////////////////////////////////////////	
 	@Override
 	public void salvar(TipoProcedimento tipoProcedimento) throws ProntuarioException {
-		if(tipoProcedimento.getNome().trim().isEmpty() || tipoProcedimento.getDescricao().trim().isEmpty()) {
+		if(verificarTipoProcedimentoNomeEDescricao(tipoProcedimento)) {
 			throw new ProntuarioException(ERRO_CAMPOS_OBRIGATORIOS);
 		}
 		if(tipoProcedimentoRepository.findByNome(tipoProcedimento.getNome()) != null) {
@@ -30,21 +30,41 @@ public class TipoProcedimentoServiceImpl implements TipoProcedimentoService{
 		}
 		tipoProcedimentoRepository.save(tipoProcedimento);
 	}
-
+	
+	public boolean verificarTipoProcedimentoNomeEDescricao(TipoProcedimento tipoProcedimento) {
+		return tipoProcedimento.getNome().trim().isEmpty() || tipoProcedimento.getDescricao().trim().isEmpty();
+	}
+	
+	
+///////////////////////////////////////////////////////////////	
+///////////////////////////////////////////////////////////////	
 	@Override
 	public void atualizar(TipoProcedimento tipoProcedimento) throws ProntuarioException {
-		if (tipoProcedimento.getId() == null || tipoProcedimento.getNome().trim().isEmpty()) {
+		if (verificarTipoProcedimentoIDENome(tipoProcedimento)) {
 			throw new ProntuarioException(ExceptionSuccessConstants.ERRO_CAMPOS_OBRIGATORIOS);
 		}
 
-		TipoProcedimento tipoProcedimentoExistente = tipoProcedimentoRepository.findByNome(tipoProcedimento.getNome());
-		if (tipoProcedimentoExistente != null && !tipoProcedimentoExistente.getId().equals(tipoProcedimento.getId())) {
+		TipoProcedimento tipoProcedimentoExistente = buscarPorNomeTipoProcedimento(tipoProcedimento);
+		if (verificarTipoProcedimentoExistente(tipoProcedimento,tipoProcedimentoExistente)) {
 			throw new ProntuarioException(ExceptionSuccessConstants.ERRO_SALVAR_TIPO_PATOLOGIA_EXISTENTE);
 		}
 
 		tipoProcedimentoRepository.save(tipoProcedimento);
 	}
-
+	
+	public boolean verificarTipoProcedimentoIDENome(TipoProcedimento tipoProcedimento) {
+		return tipoProcedimento.getId() == null || tipoProcedimento.getNome().trim().isEmpty();
+	}
+	
+	public boolean verificarTipoProcedimentoExistente(TipoProcedimento tipoProcedimento,TipoProcedimento tipoProcedimentoExistente) {
+		return tipoProcedimentoExistente != null && !tipoProcedimentoExistente.getId().equals(tipoProcedimento.getId());
+	}
+	
+	public TipoProcedimento buscarPorNomeTipoProcedimento(TipoProcedimento tipoProcedimento) {
+		return tipoProcedimentoRepository.findByNome(tipoProcedimento.getNome());
+	}
+	
+///////////////////////////////////////////////////////////////	
 	@Override
 	public List<TipoProcedimento> buscarTudo() {
 		return tipoProcedimentoRepository.findAll();

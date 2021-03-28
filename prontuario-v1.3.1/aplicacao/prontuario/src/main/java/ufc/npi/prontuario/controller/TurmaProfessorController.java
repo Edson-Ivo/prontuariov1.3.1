@@ -21,6 +21,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import ufc.npi.prontuario.model.GetProfessorTurma;
+import ufc.npi.prontuario.model.Servidor;
 import ufc.npi.prontuario.model.Turma;
 import ufc.npi.prontuario.model.Usuario;
 import ufc.npi.prontuario.service.TurmaService;
@@ -37,13 +39,21 @@ public class TurmaProfessorController {
 	public ModelAndView adicionarProfessor(@PathVariable("idTurma") Turma turma, 
 			@ModelAttribute("novosProfessores") Turma novosProfessores, RedirectAttributes attributes){
 	
-		turmaService.adicionarProfessorTurma(turma, novosProfessores.getProfessores());
+		turmaService.adicionarProfessorTurma(turma, mostrarTurmaProfessores(novosProfessores));
 	
 		if(existProfessoresTurma(turma)){
 			addMensagemSucesso(attributes, SUCCESS_VINCULAR_PROFESSOR);
 		}
 		
-		return new ModelAndView(REDIRECT_DETALHES_TURMA + turma.getId());
+		return new ModelAndView(REDIRECT_DETALHES_TURMA + mostrarIdTurma( turma));
+	}
+
+	public Integer mostrarIdTurma(Turma turma) {
+		return turma.getId();
+	}
+
+	public List<Servidor> mostrarTurmaProfessores(Turma turma){
+		return GetProfessorTurma.mostrarTurmaProfessores(turma);
 	}
 	
 	@PostAuthorize(PERMISSOES_ADMINISTRACAO_VERIFICACAO_PROFESSOR)
@@ -51,7 +61,7 @@ public class TurmaProfessorController {
 	public ModelAndView visualizarDetalhes(@PathVariable("idTurma") Turma turma) {
 		ModelAndView modelAndView = new ModelAndView(PAGINA_DETALHES_TURMA);
 		
-		List<Usuario> listaProfessores = turmaService.buscarProfessores(turma.getProfessores());
+		List<Usuario> listaProfessores = turmaService.buscarProfessores(mostrarTurmaProfessores(turma));
 		
 		modelAndView.addObject("turma", turma);
 		modelAndView.addObject("lista_professores", listaProfessores);
@@ -64,6 +74,6 @@ public class TurmaProfessorController {
 	}
 	
 	private boolean existProfessoresTurma(Turma turma) {
-		return turma.getProfessores().isEmpty();
+		return mostrarTurmaProfessores(turma).isEmpty();
 	}
 }

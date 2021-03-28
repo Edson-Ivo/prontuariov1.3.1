@@ -17,6 +17,7 @@ import com.github.springtestdbunit.annotation.DatabaseSetup;
 import com.github.springtestdbunit.annotation.DatabaseTearDown;
 
 import ufc.npi.prontuario.exception.ProntuarioException;
+import ufc.npi.prontuario.model.GetEmailUsuario;
 import ufc.npi.prontuario.model.Token;
 import ufc.npi.prontuario.model.Usuario;
 
@@ -38,7 +39,11 @@ public class UsuarioServiceTest extends AbstractServiceTest {
 
 		Usuario usuario = usuarioService.buscarPorEmail(email);
 
-		assertEquals(email, usuario.getEmail());
+		assertEquals(email, GetEmailUsuario.getUsuarioEmail(usuario));
+	}
+	
+	public Integer mostrarIdUsuario(Usuario usuario) {
+		return usuario.getId();
 	}
 
 	@Test
@@ -46,7 +51,7 @@ public class UsuarioServiceTest extends AbstractServiceTest {
 		Usuario usuario = usuarioService.buscarPorEmail("servidor1@email.com");
 
 		try {
-			usuarioService.alterarSenha(usuario.getId(), "1234", "12345");
+			usuarioService.alterarSenha(mostrarIdUsuario(usuario), "1234", "12345");
 		} catch (ProntuarioException e) {
 			e.printStackTrace();
 		}
@@ -54,7 +59,7 @@ public class UsuarioServiceTest extends AbstractServiceTest {
 		assertTrue(new BCryptPasswordEncoder().matches("12345", usuario.getSenha()));
 
 		try {
-			usuarioService.alterarSenha(usuario.getId(), "4321", "12345");
+			usuarioService.alterarSenha(mostrarIdUsuario(usuario), "4321", "12345");
 		} catch (ProntuarioException e) {
 			assertThat(e).isInstanceOf(ProntuarioException.class).hasMessage(ERRO_ALTERAR_SENHA);
 		}

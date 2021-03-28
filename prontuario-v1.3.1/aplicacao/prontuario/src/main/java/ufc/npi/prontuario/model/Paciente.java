@@ -12,7 +12,7 @@ import javax.validation.constraints.NotNull;
 import org.springframework.format.annotation.DateTimeFormat;
 
 @Entity
-public class Paciente extends PacienteDocumento {
+public class Paciente {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,6 +33,8 @@ public class Paciente extends PacienteDocumento {
     private String naturalidade;
 
     private String nacionalidade;
+    
+    private List<Documento> documentos;
 
     private String cpf;
 
@@ -305,6 +307,22 @@ public class Paciente extends PacienteDocumento {
         int result = 1;
         result = prime * result + ((id == null) ? 0 : id.hashCode());
         return result;
+    }
+
+    public List<Documento> getDocumentos() {
+        return documentos;
+    }
+
+    public void addDocumento(Documento documento) {
+        if (this.documentos == null) {
+            this.documentos = new ArrayList<>();
+        }
+
+        this.documentos.add(documento);
+    }
+
+    public void removerDocumento(Documento documento) {
+        this.documentos.remove(documento);
     }
 
     @Override

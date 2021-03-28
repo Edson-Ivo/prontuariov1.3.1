@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
+import ufc.npi.prontuario.model.GetUsuarioId;
 import ufc.npi.prontuario.model.Paciente;
 import ufc.npi.prontuario.model.Usuario;
 import ufc.npi.prontuario.service.AtendimentoService;
@@ -24,6 +25,10 @@ public class PacienteAtendimentoController {
 	@Autowired
 	private AtendimentoService atendimentoService;
 	
+	public Integer mostrarIdUsuario(Usuario usuario) {
+		return GetUsuarioId.mostrarIdUsuario(usuario);
+	}
+	
 	@PreAuthorize(PERMISSOES_ESTUDANTE_PROFESSOR_ADMINISTRACAO)
 	@GetMapping("/{idPaciente}/atendimentos")
 	public ModelAndView listarAtendimentos(@PathVariable("idPaciente") Paciente paciente, Authentication auth) {
@@ -31,7 +36,7 @@ public class PacienteAtendimentoController {
 		Usuario usuario = (Usuario) auth.getPrincipal();
 		modelAndView.addObject("paciente", paciente);
 		modelAndView.addObject("atendimentos",
-				atendimentoService.buscarAtendimentosPorUsuario(usuario.getId(), paciente));
+				atendimentoService.buscarAtendimentosPorUsuario(mostrarIdUsuario(usuario), paciente));
 		return modelAndView;
 	}
 
@@ -42,7 +47,7 @@ public class PacienteAtendimentoController {
 		Usuario usuario = (Usuario) auth.getPrincipal();
 		modelAndView.addObject("paciente", paciente);
 		modelAndView.addObject("atendimentos",
-				atendimentoService.buscarAtendimentosPorUsuario(usuario.getId(), paciente));
+				atendimentoService.buscarAtendimentosPorUsuario(mostrarIdUsuario(usuario), paciente));
 		return modelAndView;
 	}
 }

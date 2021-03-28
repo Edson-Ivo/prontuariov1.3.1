@@ -4,6 +4,7 @@ import static ufc.npi.prontuario.util.ConfigurationConstants.DATE_PATTERN;
 
 import java.util.Date;
 
+import javax.management.ConstructorParameters;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -18,6 +19,14 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 public class Tratamento {
+	
+	public Tratamento() {};
+	
+	public Tratamento(Date data,Aluno aluno,String descricao) {
+		this.data=data;
+		this.responsavel=aluno;
+		this.descricao=descricao;
+	}
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

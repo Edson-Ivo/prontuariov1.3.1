@@ -29,6 +29,9 @@ import org.springframework.web.servlet.ModelAndView;
 
 import ufc.npi.prontuario.exception.ProntuarioException;
 import ufc.npi.prontuario.model.Aluno;
+import ufc.npi.prontuario.model.GetMatriculaUsuario;
+import ufc.npi.prontuario.model.GetPacienteId;
+import ufc.npi.prontuario.model.GetUsuarioId;
 import ufc.npi.prontuario.model.Odontograma;
 import ufc.npi.prontuario.model.Paciente;
 import ufc.npi.prontuario.model.Papel;
@@ -72,7 +75,7 @@ public class OdontogramaController {
 	@GetMapping("/paciente/{id}")
 	public ModelAndView novoOdontogramaPatologias(@PathVariable("id") Paciente paciente, Authentication auth) {
 		ModelAndView mv = new ModelAndView(PAGINA_ODONTOGRAMA);
-		mv.addObject("odontograma", odontogramaService.buscarPorPacienteId(paciente.getId()));
+		mv.addObject("odontograma", odontogramaService.buscarPorPacienteId(GetPacienteId.mostrarIdPaciente(paciente)));
 		mv.addObject("patologias", tipoPatologiaService.buscarTudo());
 		mv.addObject("procedimentos", tipoProcedimentoService.buscarTudo());
 		mv.addObject("paciente", paciente);
@@ -107,7 +110,7 @@ public class OdontogramaController {
 
 		Usuario usuario = (Usuario) auth.getPrincipal();
 
-		Aluno aluno = alunoService.buscarPorMatricula(usuario.getMatricula());
+		Aluno aluno = alunoService.buscarPorMatricula(GetMatriculaUsuario.getUsuarioMatricula(usuario));
 
 		Map<String, Object> map = new HashMap<String, Object>();
 		List<Procedimento> procedimentos = procedimentoService.salvar(faceDente, procedimentosId, local, idOdontograma,
@@ -118,6 +121,10 @@ public class OdontogramaController {
 				patologiaService.buscarPatologiasTratadas(odontogramaService.buscarPorId(idOdontograma)));
 		return map;
 	}
+	
+	public Integer mostrarIdUsuario(Usuario usuario) {
+		return GetUsuarioId.mostrarIdUsuario(usuario);
+	}
 
 	@GetMapping("/buscarProcedimentos/{id}")
 	public @ResponseBody Map<String, Object> buscarProcedimentos(@PathVariable("id") Odontograma odontograma,
@@ -126,7 +133,7 @@ public class OdontogramaController {
 
 		Usuario usuario = (Usuario) auth.getPrincipal();
 		map.put("procedimentosOdontograma",
-				procedimentoService.buscarProcedimentosOdontograma(odontograma, usuario.getId()));
+				procedimentoService.buscarProcedimentosOdontograma(odontograma, mostrarIdUsuario(usuario)));
 		return map;
 	}
 
@@ -137,7 +144,7 @@ public class OdontogramaController {
 
 		Usuario usuario = (Usuario) auth.getPrincipal();
 		map.put("procedimentosExistentesOdontograma",
-				procedimentoService.buscarProcedimentosExistentesOdontograma(odontograma, usuario.getId()));
+				procedimentoService.buscarProcedimentosExistentesOdontograma(odontograma,mostrarIdUsuario(usuario)));
 		return map;
 	}
 

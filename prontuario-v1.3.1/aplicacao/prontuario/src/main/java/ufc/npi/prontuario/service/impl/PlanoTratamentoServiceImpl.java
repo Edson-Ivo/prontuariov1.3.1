@@ -29,17 +29,21 @@ public class PlanoTratamentoServiceImpl implements PlanoTratamentoService {
 	public List<PlanoTratamento> buscarPlanoTratamentoPorPaciente(Paciente paciente) {
 		return planoTratamentoRepository.findAllByPaciente(paciente);
 	}
-
+//////////////////////////////////////////////////
 	@Override
 	public void excluirPlanoTratamento(PlanoTratamento planoTratamento) throws ProntuarioException {
 		PlanoTratamento old = planoTratamentoRepository.findOne(planoTratamento.getId());
-		if (!old.getStatus().equals(Status.EM_ESPERA)) {
+		if (!planoEmEspera(old)) {
 			throw new ProntuarioException(ERROR_EXCLUIR_PLANO_TRATAMENTO);
 		} else {
 			planoTratamentoRepository.delete(old);
 		}
 	}
-
+	
+	public boolean planoEmEspera(PlanoTratamento old) {
+		return old.getStatus().equals(Status.EM_ESPERA);
+	}
+///////////////////////////////////////////
 	@Override
 	public void salvar(PlanoTratamento planoTratamento, Servidor responsavel, Paciente paciente)
 			throws ProntuarioException {
@@ -51,27 +55,43 @@ public class PlanoTratamentoServiceImpl implements PlanoTratamentoService {
 			throw new ProntuarioException(ERRO_ADD_PLANO_TRATAMENTO);
 		}
 	}
-
+//////////////////////////////////////////////////////////////////////////////////
 	private boolean pacienteNaoTemTratamento(PlanoTratamento planoTratamento) {
 		List<Status> statusList = Arrays.asList(Status.EM_ESPERA, Status.EM_ANDAMENTO);
 		Integer quantidateTratamentos = planoTratamentoRepository.countByPacienteAndClinicaAndStatusIn(
-				planoTratamento.getPaciente(), planoTratamento.getClinica(), statusList);
+				pegarPaciente(planoTratamento), pegarClinica(planoTratamento), statusList);
 
 		return quantidateTratamentos == 0;
 	}
-
+	public Paciente pegarPaciente(PlanoTratamento planoTratamento) {
+		return planoTratamento.getPaciente();
+	}
+	
+	public Disciplina pegarClinica(PlanoTratamento planoTratamento) {
+		return planoTratamento.getClinica();
+	}
+	//////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////
 	@Override
 	public void finalizar(PlanoTratamento planoTratamento) throws ProntuarioException {
 		PlanoTratamento old = planoTratamentoRepository.findOne(planoTratamento.getId());
-		if (old.getStatus().equals(Status.EM_ESPERA)) {
-			old.setStatus(Status.CONCLUIDO);
-			planoTratamentoRepository.save(old);
+		if (equalStatus(old)) {
+		 	configurarStatus(old);
+		 	planoTratamentoRepository.save(old);
 		} else {
 			throw new ProntuarioException(ERROR_FINALIZAR_PLANO_TRATAMENTO);
 		}
 
 	}
-
+	public boolean equalStatus(PlanoTratamento old) {
+		Status status = old.getStatus();
+		return status.equals(Status.EM_ESPERA);
+	} 
+	
+	public void configurarStatus(PlanoTratamento old) {
+		old.setStatus(Status.CONCLUIDO);
+	}
+/////////////////////////////////////////////////////////////////
 	@Override
 	public List<PlanoTratamento> buscarPlanoTratamentoPorClinicaEStatus(Disciplina disciplina, String status) {
 
@@ -83,17 +103,26 @@ public class PlanoTratamentoServiceImpl implements PlanoTratamentoService {
 		}
 
 	}
-
+////////////////////////////////////////////////////////////////////////
 	@Override
 	public void editar(PlanoTratamento planoTratamento) throws ProntuarioException {
 		PlanoTratamento old = planoTratamentoRepository.findOne(planoTratamento.getId());
-		if (old == null || 
-				(old.getStatus().equals(Status.CONCLUIDO) || 
-						old.getStatus().equals(Status.INTERROMPIDO))) {
+		if (planoTratamentoConcluidoInterrompido(old)) {
 			throw new ProntuarioException(ERROR_EDITAR_PLANO_TRATAMENTO);
 		} else {
 			planoTratamentoRepository.save(planoTratamento);
 		}
 	}
-
+	
+	public boolean planoTratamentoConcluidoInterrompido(PlanoTratamento old) {
+		return old == null || (tratamentoConcluido(old) || tratamentoInterrompido(old));
+	}
+	
+	public boolean tratamentoConcluido(PlanoTratamento old) {
+		return old.getStatus().equals(Status.CONCLUIDO);
+	}
+	public boolean tratamentoInterrompido(PlanoTratamento old) {
+		return old.getStatus().equals(Status.INTERROMPIDO);
+	}
+///////////////////////////////////////////////////////////////////////////
 }

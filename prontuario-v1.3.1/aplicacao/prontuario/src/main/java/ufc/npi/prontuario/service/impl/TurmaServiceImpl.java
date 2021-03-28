@@ -11,6 +11,8 @@ import ufc.npi.prontuario.model.Aluno;
 import ufc.npi.prontuario.model.AlunoTurma;
 import ufc.npi.prontuario.model.AlunoTurmaId;
 import ufc.npi.prontuario.model.Atendimento;
+import ufc.npi.prontuario.model.GetProfessorTurma;
+import ufc.npi.prontuario.model.GetUsuarioId;
 import ufc.npi.prontuario.model.Papel;
 import ufc.npi.prontuario.model.Servidor;
 import ufc.npi.prontuario.model.Turma;
@@ -39,29 +41,28 @@ public class TurmaServiceImpl implements TurmaService {
 	@Autowired
 	private UsuarioRepository usuarioRepository;
 
+///////////////////////////////////////////////////////////////////
 	public void salvar(Turma turma) throws ProntuarioException {
-		boolean turmaExiste = turmaRepository.findByNomeAndAnoAndSemestreAndDisciplina(turma.getNome(), turma.getAno(), turma.getSemestre(), turma.getDisciplina()) != null;
+		boolean turmaExiste = turma.turmaExisteNoRepositorio(turmaRepository);
 		if(turmaExiste){
 			throw new ProntuarioException(ERRO_SALVAR_TURMA_EXISTENTE);
 		}
 		turma.setAtivo(true);
 		turmaRepository.save(turma);
 	}
-
+/////////////////////////////////////////////////////////////////
 	public Turma buscarPorId(Integer id) {
 		return turmaRepository.findOne(id);
 	}
-
-	public void inscreverAluno(Turma turma, String matricula) throws ProntuarioException {
+////////////////////////////////////////////////////////////////////////////////////////////////////
+    public void inscreverAluno(Turma turma, String matricula) throws ProntuarioException {
 		Aluno aluno = alunoRepository.findByMatricula(matricula);
-		if (aluno == null) {
+		if (alunoNull(aluno)) {
 			throw new ProntuarioException(ERROR_MATRICULA_INEXISTENTE);
 		}
-		if (turma != null) {
-			AlunoTurma inscricao = new AlunoTurma();
-			inscricao.setAluno(aluno);
-			inscricao.setTurma(turma);
-			inscricao.setAtivo(true);
+		if (turmaNotNull(turma)) {
+			AlunoTurma inscricao = new AlunoTurma(); 
+			inscricao.setInscricao(aluno, turma, true);
 
 			if(turma.getAlunoTurmas().contains(inscricao)){
 				throw new ProntuarioException(ERROR_ALUNO_JA_CADASTRADO);
@@ -71,6 +72,15 @@ public class TurmaServiceImpl implements TurmaService {
 			turmaRepository.save(turma);
 		}
 	}
+	
+	public boolean alunoNull(Aluno aluno) {
+		return aluno == null;
+	}
+	
+	public boolean turmaNotNull(Turma turma) {
+		return turma != null;
+	}
+/////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	public void removerInscricao(Turma turma, Aluno aluno) throws ProntuarioException {
 		List<Atendimento> atendimentosRealizados = atendimentoRepository.findAllByResponsavelAndTurmaOrAjudanteAndTurma(aluno,turma,aluno,turma);
@@ -101,11 +111,15 @@ public class TurmaServiceImpl implements TurmaService {
 		turmaRepository.save(turma);
 	}
 
+	public List<Servidor> mostrarTurmaProfessores(Turma turma){
+		return GetProfessorTurma.mostrarTurmaProfessores(turma);
+	}
+
 	@Override
 	public void adicionarProfessorTurma(Turma turma, List<Servidor> professores) {
 		if (!professores.isEmpty()) {
 			for (Servidor professor : professores) {
-				turma.getProfessores().add(professor);
+				mostrarTurmaProfessores(turma).add(professor);
 			}
 			turmaRepository.save(turma);
 		}
@@ -124,13 +138,17 @@ public class TurmaServiceImpl implements TurmaService {
 		return buscarProfessoresPeloId(professores);
 	}
 
-	private List<Usuario> buscarProfessoresPeloId(List<Servidor> professores) {
-		List<Integer> professoresId = new ArrayList<Integer>();
-		for (Usuario professor : professores) {
-			professoresId.add(professor.getId());
-		}
-		return usuarioRepository.findByIdNotInAndPapeisOrderByNome(professoresId, Papel.PROFESSOR);
+	public Integer mostrarIdUsuario(Usuario usuario) {
+		return GetUsuarioId.mostrarIdUsuario(usuario);
 	}
+
+	 private List<Usuario> buscarProfessoresPeloId(List<Servidor> professores) {
+	 	List<Integer> professoresId = new ArrayList<Integer>();
+	 	for (Usuario professor : professores) {
+	 		professoresId.add(mostrarIdUsuario(professor));
+	 	}
+	 	return usuarioRepository.findByIdNotInAndPapeisOrderByNome(professoresId, Papel.PROFESSOR);
+	 }
 
 	@Override
 	public List<Turma> buscarTurmas(Servidor servidor) {
@@ -160,7 +178,7 @@ public class TurmaServiceImpl implements TurmaService {
 			throw new ProntuarioException(ERROR_PROFESSOR_POSSUI_ATENDIMENTO);
 		}
 		
-		if (!turma.getProfessores().remove(professor))
+		if (!mostrarTurmaProfessores(turma).remove(professor))
 			return;
 
 		turmaRepository.save(turma);

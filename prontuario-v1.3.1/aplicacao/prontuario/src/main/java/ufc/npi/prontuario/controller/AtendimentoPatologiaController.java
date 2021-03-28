@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import ufc.npi.prontuario.model.Atendimento;
+import ufc.npi.prontuario.model.GetAtendimentoId;
 import ufc.npi.prontuario.model.Patologia;
 import ufc.npi.prontuario.service.*;
 
@@ -31,7 +32,7 @@ public class AtendimentoPatologiaController {
     public ModelAndView removerPatologia(@PathVariable("idPatologia") Patologia patologia,
                                          @PathVariable("idAtendimento") @Param("atendimento") Atendimento atendimento, Authentication auth,
                                          RedirectAttributes attributes) {
-        ModelAndView modelAndView = new ModelAndView(REDIRECT_DETALHES_ATENDIMENTO + atendimento.getId());
+        ModelAndView modelAndView = new ModelAndView(REDIRECT_DETALHES_ATENDIMENTO + GetAtendimentoId.getIdAtendimento(atendimento));
         patologiaService.deletar(patologia);
         attributes.addFlashAttribute(SUCCESS, SUCCESS_EXCLUIR_PATOLOGIA);
         return modelAndView;

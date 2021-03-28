@@ -14,6 +14,10 @@ import com.github.springtestdbunit.annotation.DatabaseTearDown;
 
 import ufc.npi.prontuario.exception.ProntuarioException;
 import ufc.npi.prontuario.model.Aluno;
+import ufc.npi.prontuario.model.GetMatriculaUsuario;
+import ufc.npi.prontuario.model.SetUsuarioId;
+import ufc.npi.prontuario.model.Usuario;
+import ufc.npi.prontuario.model.SetSenhaUsuario;
 
 @DatabaseSetup(AlunoServiceTest.DATASET)
 @DatabaseTearDown(type = DatabaseOperation.DELETE_ALL, value = {AlunoServiceTest.DATASET})
@@ -46,7 +50,7 @@ public class AlunoServiceTest extends AbstractServiceTest {
 	public void testBuscarPorMatricula(){
 		Aluno aluno;
 		aluno = alunoService.buscarPorMatricula("3333");
-		assertEquals("3333", aluno.getMatricula());
+		assertEquals("3333", GetMatriculaUsuario.getUsuarioMatricula(aluno));
 		
 		//buscar por matricula inexistente
 		aluno = alunoService.buscarPorMatricula("4444");
@@ -56,7 +60,7 @@ public class AlunoServiceTest extends AbstractServiceTest {
 	@Test
 	public void testBuscarAjudantes(){
 		Aluno ajudante = new Aluno();
-		ajudante.setId(1);
+		SetUsuarioId.setIdUsuario(ajudante,1);
 		List<Aluno> alunos = alunoService.buscarAjudantes(1, ajudante);
 		assertEquals(2, alunos.size());
 		
@@ -64,7 +68,7 @@ public class AlunoServiceTest extends AbstractServiceTest {
 		assertEquals(false, alunos.contains(ajudante));
 		
 		//buscar por ajudante inexistente
-		ajudante.setId(4);
+		SetUsuarioId.setIdUsuario(ajudante,4);
 		alunos = alunoService.buscarAjudantes(2, ajudante);
 		assertNull(alunos);
 	}
@@ -75,7 +79,7 @@ public class AlunoServiceTest extends AbstractServiceTest {
 		aluno.setEmail("aluno@aluno.com");
 		aluno.setMatricula("308020");
 		aluno.setNome("Aluno 1");
-		aluno.setSenha("1234");
+		SetSenhaUsuario.setUsuarioSenha(aluno,"1234");
 		aluno.encodePassword();
 		aluno.setAnoIngresso(2010);
 		aluno.setSemestreIngresso(1);

@@ -13,6 +13,8 @@ import com.github.springtestdbunit.annotation.DatabaseTearDown;
 
 import ufc.npi.prontuario.exception.ProntuarioException;
 import ufc.npi.prontuario.model.Servidor;
+import ufc.npi.prontuario.model.SetUsuarioId;
+import ufc.npi.prontuario.model.SetSenhaUsuario;
 
 @DatabaseSetup(ServidorServiceTest.DATASET)
 @DatabaseTearDown(type = DatabaseOperation.DELETE_ALL, value = {ServidorServiceTest.DATASET})
@@ -31,7 +33,7 @@ public class ServidorServiceTest extends AbstractServiceTest{
 	@Test
 	public void testBuscarPorId(){
 		Servidor servidor = new Servidor();
-		servidor.setId(1);
+		SetUsuarioId.setIdUsuario(servidor,1);
 		Servidor servidor2 = servidorService.buscarPorId(1);
 		
 		assertEquals(servidor.getId(), servidor2.getId());
@@ -46,7 +48,7 @@ public class ServidorServiceTest extends AbstractServiceTest{
 		servidor.setEmail("servidor3@email.com");
 		servidor.setNome("Servidor 3");
 		servidor.setMatricula("555554");
-		servidor.setSenha("1234");
+		SetSenhaUsuario.setUsuarioSenha(servidor,"1234");
 		servidor.encodePassword();
 		
 		try {
@@ -62,7 +64,7 @@ public class ServidorServiceTest extends AbstractServiceTest{
 		servidor3.setEmail("servidor1@email.com");
 		servidor3.setNome("Servidor 13");
 		servidor3.setMatricula("555559");
-		servidor3.setSenha("1234");
+		SetSenhaUsuario.setUsuarioSenha(servidor3,"1234");
 		servidor3.encodePassword();
 		
 		try {
@@ -80,7 +82,7 @@ public class ServidorServiceTest extends AbstractServiceTest{
 		servidor4.setEmail("servidor4@email.com");
 		servidor4.setNome("Servidor 4");
 		servidor4.setMatricula("555556");
-		servidor4.setSenha("1234");
+		SetSenhaUsuario.setUsuarioSenha(servidor4,"1234");
 		servidor4.encodePassword();
 				
 		try {

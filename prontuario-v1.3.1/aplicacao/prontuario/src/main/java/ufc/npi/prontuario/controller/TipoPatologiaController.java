@@ -43,8 +43,8 @@ public class TipoPatologiaController {
 		model.addObject("tipoPatologia", patologia);
 		return model;
 	}
-
-	@PreAuthorize(PERMISSAO_ADMINISTRACAO)
+//////////////////////////////////////////////////////////////////////////////////////////////////
+    @PreAuthorize(PERMISSAO_ADMINISTRACAO)
 	@PostMapping(value = "/adicionar")
 	public ModelAndView adicionarTipoPatologia(@Valid @ModelAttribute("tipoPatologia") TipoPatologia tipoPatologia, BindingResult result,
 											   RedirectAttributes attributes) {
@@ -52,12 +52,12 @@ public class TipoPatologiaController {
 
 		if(!result.hasErrors()){
 			try {
-				if(tipoPatologia.getId() == null) {
+				if(PatologiaIdNull(tipoPatologia)) {
 					tipoPatologiaService.salvar(tipoPatologia);
-					attributes.addFlashAttribute(SUCCESS, SUCCESS_SALVAR_TIPO_PATOLOGIA);
+					addFlashAttribute(attributes, SUCCESS, SUCCESS_SALVAR_TIPO_PATOLOGIA);
 				} else {
 					tipoPatologiaService.atualizar(tipoPatologia);
-					attributes.addFlashAttribute(SUCCESS, SUCCESS_EDITAR_TIPO_PATOLOGIA);
+					addFlashAttribute(attributes, SUCCESS, SUCCESS_EDITAR_TIPO_PATOLOGIA);
 				}
 			} catch (ProntuarioException e) {
 				modelAndView.addObject("tiposPatologia", tipoPatologiaService.buscarTudo());
@@ -67,6 +67,15 @@ public class TipoPatologiaController {
 		}
 		return modelAndView;
 	}
+	
+	public boolean PatologiaIdNull(TipoPatologia tipoPatologia) {
+		return tipoPatologia.getId() == null;
+	}
+	
+	public void addFlashAttribute(RedirectAttributes attributes, String option1, String option2) {
+		attributes.addFlashAttribute(option1, option2);
+	}
+////////////////////////////////////////////////////////////////////////////////////////////////////
 	@PreAuthorize(PERMISSAO_ADMINISTRACAO)
 	@GetMapping(value = "/editar/{idTipoPatologia}")
 	public ModelAndView formularioEditarTipoPatologia(@PathVariable("idTipoPatologia") TipoPatologia tipoPatologia){

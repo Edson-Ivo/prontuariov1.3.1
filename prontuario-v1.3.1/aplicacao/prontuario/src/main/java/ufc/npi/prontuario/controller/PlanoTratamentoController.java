@@ -25,6 +25,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import ufc.npi.prontuario.exception.ProntuarioException;
 import ufc.npi.prontuario.model.Disciplina;
+import ufc.npi.prontuario.model.GetPacienteId;
 import ufc.npi.prontuario.model.Paciente;
 import ufc.npi.prontuario.model.PlanoTratamento;
 import ufc.npi.prontuario.model.PlanoTratamento.Status;
@@ -55,7 +56,7 @@ public class PlanoTratamentoController {
 	@PostMapping("/cadastrar")
 	public ModelAndView cadastrar(PlanoTratamento planoTratamento, @RequestParam("paciente") Paciente paciente,
 			@RequestParam("responsavel") Servidor responsavel, RedirectAttributes attributes) {
-		final String redirectTratamentos = REDIRECT_INDEX + "paciente/" + paciente.getId() + "/tratamentos";
+		final String redirectTratamentos = REDIRECT_INDEX + "paciente/" + GetPacienteId.mostrarIdPaciente(paciente) + "/tratamentos";
 		ModelAndView mv = new ModelAndView(redirectTratamentos);
 		
 		try {
